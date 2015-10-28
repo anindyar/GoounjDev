@@ -133,9 +133,10 @@ for (var _i = 0, _len = services.length; _i < _len; _i++) {
 }
 
 if (config.http.enabled) {
-    http.createServer(app).listen(config.http.port);
-	app.writeHead(200, { 'Content-Type': 'text/plain' });
-    log.info({Function: "init"}, "Goounj-API listening for http on port " + config.http.port);
+    http.createServer(app, function (req, res) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    }).listen(config.http.port);
+	log.info({Function: "init"}, "Goounj-API listening for http on port " + config.http.port);
 }
 
 if (config.https.enabled) {
