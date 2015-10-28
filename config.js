@@ -101,7 +101,7 @@ if (process.env.NODE_ENV == 'production') {
     config.mysql.db.name = 'goounj';
 
     // production http/https setup
-    config.http.port = 80;
+    config.http.port = 1337;
     config.https.enabled = false;
     config.https.port = 443;
 
