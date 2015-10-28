@@ -89,7 +89,7 @@ config = {
     }
 };
 
-if (process.env.production != null) {
+if (process.env.NODE_ENV == 'production') {
 
     // Production db setup
     config.mysql.server.host = 'goounjdb.cloudapp.net';
