@@ -31,6 +31,8 @@ var cafile, cafiles, config, fs;
 
 fs = require('fs');
 
+process.env.NODE_ENV = 'production';
+
 config = {
     name: 'Goounj-API',
     version: '0.1.0',
