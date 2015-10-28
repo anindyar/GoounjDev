@@ -1,7 +1,7 @@
 {
   "name": "Goounj-API",
   "version": "0.1.0",
-  "engines":{"node":"4.2.1"}
+  "engines":{"node":"4.2.1"},
   "author": {
     "name": "Kennet Jacob",
     "email": "kennetjacob@gmail.com",
