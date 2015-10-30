@@ -85,10 +85,9 @@ config = {
         enabled: false,
         adithya: {
             host: 'adithya.me',
-            port: '443',
             username: 'TRACKIDON',
             password: 'ADMIN@123',
-            senderId: 'TRACKID'
+            senderId: 'TRAKID'
         }
     },
     userVerification: {
