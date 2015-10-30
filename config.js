@@ -83,8 +83,13 @@ config = {
     },
     sms: {
         enabled: false,
-        host: 'adithya.me',
-        port: '443'
+        adithya: {
+            host: 'adithya.me',
+            port: '443',
+            username: '',
+            password: '',
+            senderId: ''
+        }
     },
     userVerification: {
         enabled: false,
