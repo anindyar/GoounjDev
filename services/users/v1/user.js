@@ -87,7 +87,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var jsn, phoneNumber;
     try {
-        if((request.body.country != null && request.body.country.length != 0) && (request.body.city != null && request.body.city.length != 0) && (request.body.phone != null && request.body.phone.length != 0)) {
+        if((request.body.country != null && request.body.country.length != 0) && (request.body.city != null && request.body.city.length != 0) && (request.body.phone != null && request.body.phone.length != 0) && (request.body.deviceId != null && request.body.deviceId.length != 0) && (request.body.deviceToken != null && request.body.deviceToken.length != 0) && (request.body.osType != null && request.body.osType.length != 0) && (request.body.osVersion != null && request.body.osVersion.length != 0)) {
 
             if(request.body.country != null) {
                 var country = request.body.country;
@@ -125,6 +125,23 @@ exports.create = function(request, response) {
                     }
                     if (result[0]) {
 
+                        if (result[0].device_token != request.body.deviceToken) {
+                            var jsnData = {};
+                            jsnData['device_id'] = request.body.deviceId;
+                            jsnData['device_token'] = request.body.deviceToken;
+                            jsnData['os_type'] = request.body.osType;
+                            jsnData['os_version'] = request.body.osVersion;
+                            connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? Where id = ?', [jsnData, result[0].id], function(queryError, item) {
+                                if(queryError != null) {
+                                    log.error(queryError, "Query error. Failed to create a new user. User Details: " + JSON.stringify(request.body.phone) + "(Function = User.Create)");
+                                    jsn = {
+                                        error: "Requested action failed. Database could not be reached."
+                                    };
+                                    return response.status(500).json(jsn);
+                                }
+                            });
+                        }
+
                         var authCode = Math.floor(Math.random()*9000) + 1000;
                         var jsonData = {};
                         jsonData['auth_code'] = authCode;
@@ -146,7 +163,9 @@ exports.create = function(request, response) {
                             }
                             else {
                                 if(config.userVerification.enabled) {
-                                    sms.sendSMS(phoneNumber, "This is Goounj OTP Service. Please enter the following verification code. NSM code: " + authCode);
+                                    if(config.sms.enabled) {
+                                        sms.sendSMS(phoneNumber, "This is Goounj OTP Service. Please enter the following verification code. NSM code: " + authCode);
+                                    }
                                 }
                                 var userOBJ = user[6];
                                 var publickkeyOBJ = user[4];
@@ -196,8 +215,8 @@ exports.create = function(request, response) {
                                             verificationFlag = 1;
                                         }
 
-                                        //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag
-                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.user (phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, auth_code, role_id, auth_type_id, country, city, country_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", request.body.country, request.body.city, util.getCountryCode(request.body.country)], function(queryError, user){
+                                        //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag, authCode, roleId, authTypeId, country, city, countryCode, deviceId, deviceToken, osType, osVersion
+                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.user (phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, auth_code, role_id, auth_type_id, country, city, country_code, device_id, device_token, os_type, os_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", request.body.country, request.body.city, util.getCountryCode(request.body.country), request.body.deviceId, request.body.deviceToken, request.body.osType, request.body.osVersion], function(queryError, user) {
 
                                             if(queryError != null) {
                                                 log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= User Create)");
@@ -208,7 +227,9 @@ exports.create = function(request, response) {
                                             }
                                             else {
                                                 if(config.userVerification.enabled) {
-                                                    sms.sendSMS(phoneNumber, "This is Goounj OTP Service. Please enter the following verification code. NSM code: " + authCode);
+                                                    if(config.sms.enabled) {
+                                                        sms.sendSMS(phoneNumber, "This is Goounj OTP Service. Please enter the following verification code. NSM code: " + authCode);
+                                                    }
                                                 }
                                                 var userID = user.insertId;
                                                 jsn = {
@@ -234,9 +255,9 @@ exports.create = function(request, response) {
         }
         else {
             jsn ={
-                error: "Country, city and phone are required."
+                error: "Country, city, phone, deviceId, deviceToken, osType, osVersion are required."
             };
-            log.error({Function: "User.Create"}, "Country, city and phone are required.");
+            log.error({Function: "User.Create"}, "Country, city, phone, deviceId, deviceToken, osType, osVersion are required.");
             return response.status(400).json(jsn);
         }
     }
@@ -266,6 +287,7 @@ exports.create = function(request, response) {
  *
  */
 exports["delete"] = function(request, response) {
+    var json;
     try {
         request.getConnection(function(connectionError, connection) {
             if (connectionError != null) {
@@ -276,7 +298,7 @@ exports["delete"] = function(request, response) {
                 return response.status(500).json(json);
             }
 
-            connection.query('DELETE FROM ' + config.mysql.db.name + '.user WHERE id = ?', request.params.id, function (queryError, result) {
+            connection.query('CALL deleteUser(?);', request.params.id, function(queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Delete A User. User ID: " + request.params.id + " (Function = User.Delete)");
                     json = {

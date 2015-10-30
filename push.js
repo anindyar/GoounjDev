@@ -31,7 +31,7 @@ var config = require('./config');
 var log = require('./log');
 var gcm = require('node-gcm');
 
-exports.sendAndroidPush = function(registrationId, messageToBeSent) {
+exports.sendAndroidPush = function(registrationIds, messageToBeSent) {
 
     if(config.pushNotification.enabled) {
         // Set up the sender with you API key
@@ -44,10 +44,6 @@ exports.sendAndroidPush = function(registrationId, messageToBeSent) {
             body: messageToBeSent,
             icon: 'ic_launcher'
         });
-
-        // Add the registration tokens of the devices you want to send to
-        var registrationIds = [];
-        registrationIds.push(registrationId);
 
         // Send the message
         sender.send(message, registrationIds, 4, function (err, result) {

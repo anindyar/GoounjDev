@@ -30,6 +30,10 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
+var sms = require('./../../../sms');
+var util = require('./../../../util');
+var pushNote = require('./../../../push');
+
 
 /**
  * @apiDefine PollNotFoundError
@@ -115,7 +119,7 @@ var moment = require('moment');
 
 
 exports.create = function(request, response) {
-    var json;
+    var json, phoneNumber, message;
     try {
         if((request.body.pollName != null)  && (request.body.questionList != null)) {
             request.getConnection(function(connectionError, connection) {
@@ -170,18 +174,51 @@ exports.create = function(request, response) {
                             }
 
                             var audienceList = request.body.audience;
-                            for(var k = 0; k < audienceList.length; k++) {
-                                connection.query('CALL setAudienceForPoll(?, ?);', [audienceList[k], pollID], function(queryError, user) {
+                            var tokenList = [], phoneList = [], nonExistingUsers = request.body.audience;
 
-                                    if (queryError != null) {
-                                        log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
-                                        jsn = {
-                                            error: "Requested action failed. Database could not be reached."
-                                        };
-                                        return response.status(500).json(json);
-                                    }
-                                });
+                            for(var k = 0; k < audienceList.length; k++) {
+                                (function () {
+                                    var kCopy = k;
+                                    connection.query('CALL setAudienceForPoll(?, ?);', [audienceList[kCopy], pollID], function(queryError, user) {
+
+                                        if (queryError != null) {
+                                            log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                            jsn = {
+                                                error: "Requested action failed. Database could not be reached."
+                                            };
+                                            return response.status(500).json(json);
+                                        }
+                                        //else {
+                                        //    connection.query('SELECT device_token FROM '+ config.mysql.db.name +'.user WHERE phone = ?', audienceList[kCopy], function(queryError, dtoken) {
+                                        //        if (queryError != null) {
+                                        //            log.error(queryError, "Query error. Failed to get token details for audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                        //            jsn = {
+                                        //                error: "Requested action failed. Database could not be reached."
+                                        //            };
+                                        //            return response.status(500).json(json);
+                                        //        }
+                                        //        if(dtoken) {
+                                        //            tokenList.push(dtoken[0].device_token.toString());
+                                        //        }
+                                        //        else if(dtoken == null) {
+                                        //            phoneNumber = util.getCountryCode(audienceList[kCopy]) + audienceList[kCopy].toString();
+                                        //            phoneList.push(phoneNumber);
+                                        //        }
+                                        //    });
+                                        //}
+                                    });
+                                }());
                             }
+
+                            //if(config.pushNotification.enabled) {
+                            //    message = 'Hi! A new poll for you!';
+                            //    pushNote.sendAndroidPush(tokenList, message);
+                            //}
+                            //if(config.sms.enabled) {
+                            //    message = "GOOUNJ ~Opinion Matters~ : You have a poll to answer! Install the app for a great polling experience.";
+                            //    sms.sendSMS(phoneList, message);
+                            //}
+
                             connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE name=?))', [pollID, request.body.category], function (queryError, poll) {
                                 if (queryError != null) {
                                     log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
@@ -189,6 +226,33 @@ exports.create = function(request, response) {
                                         error: "Requested action failed. Database could not be reached."
                                     };
                                     return response.status(500).json(json);
+                                }
+                            });
+
+                            connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', [request.body.audience], function(queryError, list) {
+                                if (queryError != null) {
+                                    log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                    json = {
+                                        error: "Requested action failed. Database could not be reached."
+                                    };
+                                    return response.status(500).json(json);
+                                }
+                                if(list) {
+                                    for(var t = 0; t < list.length; t++) {
+                                        if(list[t].device_token != null) {
+                                            tokenList.push(list[t].device_token);
+                                            phoneList.push(list[t].phone);
+                                        }
+                                    }
+                                    if(config.pushNotification.enabled) {
+                                        message = 'Hi! A new poll for you!';
+                                        pushNote.sendAndroidPush(tokenList, message);
+                                    }
+                                    nonExistingUsers = nonExistingUsers.filter( function( element ) {
+                                        return phoneList.indexOf( element ) < 0;
+                                    });
+                                    console.log(nonExistingUsers);
+                                    console.log(phoneList);
                                 }
                             });
                             log.info({Function: "Poll.Create"}, "New poll created successfully. Poll ID: " + pollID);
@@ -333,7 +397,7 @@ exports.show = function(request, response) {
                 return response.status(500).json(json);
             }
 
-            connection.query('SELECT poll.poll_name AS pollName, poll.is_boost AS isBoost, (SELECT type FROM poll_type WHERE id = poll.poll_type_id) AS pollType, (SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, (SELECT type FROM visibility_type WHERE id = poll.visibility_type_id) AS visibilityType, (SELECT type FROM reward_type WHERE id = poll.reward_type_id) AS rewardType, poll.created_user_id AS createdUserId, question.question, (SELECT type FROM question_type WHERE id = question.question_type_id) AS questionType, question_options.`option` AS choices FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, resultSet) {
+            connection.query('SELECT poll.poll_name AS pollName, poll.is_boost AS isBoost, (SELECT type FROM poll_type WHERE id = poll.poll_type_id) AS pollType, (SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, (SELECT type FROM visibility_type WHERE id = poll.visibility_type_id) AS visibilityType, (SELECT type FROM reward_type WHERE id = poll.reward_type_id) AS rewardType, poll.created_user_id AS createdUserId, (SELECT CONCAT(first_name," ",last_name) FROM user WHERE id = poll.created_user_id) AS createdUser, question.question, (SELECT type FROM question_type WHERE id = question.question_type_id) AS questionType, question_options.`option` AS choices FROM user INNER JOIN poll ON poll.created_user_id = user.id INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, resultSet) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch poll details. Poll ID: " + JSON.stringify(request.params.id) + "(Function= Poll Show)");
                     json = {
@@ -341,12 +405,13 @@ exports.show = function(request, response) {
                     };
                     return response.status(500).json(json);
                 } else {
-                    if (resultSet) {
+                    if (resultSet[0]) {
                         var jsonOutput = {
                             pollName:           resultSet[0].pollName,
                             category:           resultSet[0].category,
                             pollType:           resultSet[0].pollType,
                             createdUserId:      resultSet[0].createdUserId,
+                            createdUser:        resultSet[0].createdUser,
                             isBoost:            resultSet[0].isBoost,
                             rewardType:         resultSet[0].rewardType,
                             visibilityType:     resultSet[0].visibilityType,

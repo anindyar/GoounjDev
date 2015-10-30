@@ -126,7 +126,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT * FROM poll INNER JOIN audience_poll_map ON poll.id = poll_id WHERE user_id = ? LIMIT ?', [request.body.userId, request.body.limit], function(queryError, result) {
+                connection.query('SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, (SELECT concat(first_name," ",last_name)) AS createdUserName FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE user_id = ? LIMIT ?', [request.body.userId, request.body.limit], function(queryError, result) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
                         json = {
@@ -135,6 +135,7 @@ exports.create = function(request, response) {
                         return response.status(500).json(json);
                     }
                     else if(result) {
+
                         log.info({Function: "PollList.Create"}, "Fetched Poll List.");
                         return response.status(200).json(result);
                     }
