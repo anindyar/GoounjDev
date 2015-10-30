@@ -83,8 +83,8 @@ config = {
     },
     sms: {
         enabled: false,
-        host: 'smslane.com',
-        port: '80'
+        host: 'adithya.me',
+        port: '443'
     },
     userVerification: {
         enabled: false,
