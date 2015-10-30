@@ -244,15 +244,12 @@ exports.create = function(request, response) {
                                             phoneList.push(list[t].phone);
                                         }
                                     }
-                                    if(config.pushNotification.enabled) {
-                                        message = 'Hi! A new poll for you!';
-                                        pushNote.sendAndroidPush(tokenList, message);
-                                    }
+                                    message = 'Hi! A new poll for you!';
+                                    pushNote.sendAndroidPush(tokenList, message);
                                     nonExistingUsers = nonExistingUsers.filter( function( element ) {
                                         return phoneList.indexOf( element ) < 0;
                                     });
-                                    console.log(nonExistingUsers);
-                                    console.log(phoneList);
+                                    sms.sendSMS(nonExistingUsers, message);
                                 }
                             });
                             log.info({Function: "Poll.Create"}, "New poll created successfully. Poll ID: " + pollID);

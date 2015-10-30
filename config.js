@@ -65,7 +65,7 @@ config = {
         }
     },
     pushNotification: {
-        enabled: true,
+        enabled: false,
         android: {
             api_key: 'AIzaSyDsF2yFanZD302BOPk76a1EUCn1qgPqvH4'
         },
@@ -86,9 +86,9 @@ config = {
         adithya: {
             host: 'adithya.me',
             port: '443',
-            username: '',
-            password: '',
-            senderId: ''
+            username: 'TRACKIDON',
+            password: 'ADMIN@123',
+            senderId: 'TRACKID'
         }
     },
     userVerification: {

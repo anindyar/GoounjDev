@@ -31,27 +31,30 @@ var config = require('./config');
 var log = require('./log');
 var http = require('http');
 
-exports.sendSMS = function(recipient, text) {
+exports.sendSMS = function(recipientList, text) {
 
     if(config.sms.enabled) {
-        var content = encodeURIComponent(text);
-        var path = '/bigboss/sms.php?username='+ config.sms.adithya.username +'&password='+ config.sms.adithya.password +'&senderid='+ config.sms.adithya.senderId +'&message='+ content +'&route=T&msgtype=normal&mobileno='+ recipient +'';
-        console.log(path);
-        var options = {
-            host: config.sms.host,
-            port: config.sms.port,
-            path: path,
-            method: 'GET'
-        };
 
-        http.request(options, function(res) {
-            console.log('STATUS: ' + res.statusCode);
-            console.log('HEADERS: ' + JSON.stringify(res.headers));
-            res.setEncoding('utf8');
-            res.on('data', function (chunk) {
-                console.log('BODY: ' + chunk);
-            });
-        }).end();
+        for (var i=0; i<recipientList.length; i++) {
+            var content = encodeURIComponent(text);
+            var path = '/bigboss/sms.php?username=' + config.sms.adithya.username + '&password=' + config.sms.adithya.password + '&senderid=' + config.sms.adithya.senderId + '&message=' + content + '&route=T&msgtype=normal&mobileno=' + recipientList[i] + '';
+            console.log(path);
+            var options = {
+                host: config.sms.adithya.host,
+                port: config.sms.adithya.port,
+                path: path,
+                method: 'GET'
+            };
+
+            http.request(options, function (res) {
+                console.log('STATUS: ' + res.statusCode);
+                console.log('HEADERS: ' + JSON.stringify(res.headers));
+                res.setEncoding('utf8');
+                res.on('data', function (chunk) {
+                    console.log('BODY: ' + chunk);
+                });
+            }).end();
+        }
     } else {
         log.info({Function: "SMS.SendSMS"}, "SMS is disabled. Please enable sms in the configurations.");
     }
