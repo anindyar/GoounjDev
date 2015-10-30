@@ -65,9 +65,9 @@ config = {
         }
     },
     pushNotification: {
-        enabled: false,
+        enabled: true,
         android: {
-            api_key: ''
+            api_key: 'AIzaSyDsF2yFanZD302BOPk76a1EUCn1qgPqvH4'
         },
         ios: {
 
@@ -87,7 +87,7 @@ config = {
         port: '80'
     },
     userVerification: {
-        enabled: false,
+        enabled: false
     }
 };
 
