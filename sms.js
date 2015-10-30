@@ -35,7 +35,7 @@ exports.sendSMS = function(recipient, text) {
 
     if(config.sms.enabled) {
         var content = encodeURIComponent(text);
-        var path = '/vendorsms/pushsms.aspx?user=' + config.smslane.username + '&password=' + config.smslane.password + '&msisdn=' + recipient + '&sid=WebSMS&msg=' + content + '&fl=0';
+        var path = '/bigboss/sms.php?username='+ config.sms.adithya.username +'&password='+ config.sms.adithya.password +'&senderid='+ config.sms.adithya.senderId +'&message='+ content +'&route=T&msgtype=normal&mobileno='+ recipient +'';
         console.log(path);
         var options = {
             host: config.sms.host,
