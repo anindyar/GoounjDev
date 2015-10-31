@@ -31,7 +31,6 @@ var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
 var sms = require('./../../../sms');
-var util = require('./../../../util');
 var pushNote = require('./../../../push');
 
 
@@ -132,7 +131,7 @@ exports.create = function(request, response) {
                 }
                 else {
                     var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
-                    connection.query('INSERT INTO ' + config.mysql.db.name +'.poll (start_date, end_date, poll_name, is_boost, visibility_type_id, reward_type_id, created_user_id, poll_type_id) VALUES (?, ?, ?, ?, (SELECT id FROM visibility_type WHERE type=?), (SELECT id FROM reward_type WHERE type=?), ?, (SELECT id FROM poll_type WHERE type=?))', [utcTimeStamp, utcTimeStamp, request.body.pollName, request.body.isBoost, request.body.visibilityType, request.body.rewardType, request.body.createdUserId, request.body.pollType], function (queryError, poll) {
+                    connection.query('INSERT INTO ' + config.mysql.db.name +'.poll (start_date, end_date, poll_name, is_boost, visibility_type_id, reward_type_id, created_user_id, poll_type_id, is_active) VALUES (?, ?, ?, ?, (SELECT id FROM visibility_type WHERE type=?), (SELECT id FROM reward_type WHERE type=?), ?, (SELECT id FROM poll_type WHERE type=?), ?)', [utcTimeStamp, utcTimeStamp, request.body.pollName, request.body.isBoost, request.body.visibilityType, request.body.rewardType, request.body.createdUserId, request.body.pollType, "1"], function (queryError, poll) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
                             json = {
@@ -173,52 +172,6 @@ exports.create = function(request, response) {
                                 }());
                             }
 
-                            var audienceList = request.body.audience;
-                            var tokenList = [], phoneList = [], nonExistingUsers = request.body.audience;
-
-                            for(var k = 0; k < audienceList.length; k++) {
-                                (function () {
-                                    var kCopy = k;
-                                    connection.query('CALL setAudienceForPoll(?, ?);', [audienceList[kCopy], pollID], function(queryError, user) {
-
-                                        if (queryError != null) {
-                                            log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
-                                            jsn = {
-                                                error: "Requested action failed. Database could not be reached."
-                                            };
-                                            return response.status(500).json(json);
-                                        }
-                                        //else {
-                                        //    connection.query('SELECT device_token FROM '+ config.mysql.db.name +'.user WHERE phone = ?', audienceList[kCopy], function(queryError, dtoken) {
-                                        //        if (queryError != null) {
-                                        //            log.error(queryError, "Query error. Failed to get token details for audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
-                                        //            jsn = {
-                                        //                error: "Requested action failed. Database could not be reached."
-                                        //            };
-                                        //            return response.status(500).json(json);
-                                        //        }
-                                        //        if(dtoken) {
-                                        //            tokenList.push(dtoken[0].device_token.toString());
-                                        //        }
-                                        //        else if(dtoken == null) {
-                                        //            phoneNumber = util.getCountryCode(audienceList[kCopy]) + audienceList[kCopy].toString();
-                                        //            phoneList.push(phoneNumber);
-                                        //        }
-                                        //    });
-                                        //}
-                                    });
-                                }());
-                            }
-
-                            //if(config.pushNotification.enabled) {
-                            //    message = 'Hi! A new poll for you!';
-                            //    pushNote.sendAndroidPush(tokenList, message);
-                            //}
-                            //if(config.sms.enabled) {
-                            //    message = "GOOUNJ ~Opinion Matters~ : You have a poll to answer! Install the app for a great polling experience.";
-                            //    sms.sendSMS(phoneList, message);
-                            //}
-
                             connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE name=?))', [pollID, request.body.category], function (queryError, poll) {
                                 if (queryError != null) {
                                     log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
@@ -229,29 +182,50 @@ exports.create = function(request, response) {
                                 }
                             });
 
-                            connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', [request.body.audience], function(queryError, list) {
-                                if (queryError != null) {
-                                    log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
-                                    json = {
-                                        error: "Requested action failed. Database could not be reached."
-                                    };
-                                    return response.status(500).json(json);
+                            if(request.body.audienceList != null && request.body.audienceList.length != null) {
+                                var audienceList = request.body.audience;
+                                var tokenList = [], phoneList = [], nonExistingUsers = request.body.audience;
+
+                                for (var k = 0; k < audienceList.length; k++) {
+                                    (function () {
+                                        var kCopy = k;
+                                        connection.query('CALL setAudienceForPoll(?, ?);', [audienceList[kCopy], pollID], function (queryError, user) {
+
+                                            if (queryError != null) {
+                                                log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                                jsn = {
+                                                    error: "Requested action failed. Database could not be reached."
+                                                };
+                                                return response.status(500).json(json);
+                                            }
+                                        });
+                                    }());
                                 }
-                                if(list) {
-                                    for(var t = 0; t < list.length; t++) {
-                                        if(list[t].device_token != null) {
-                                            tokenList.push(list[t].device_token);
-                                            phoneList.push(list[t].phone);
-                                        }
+
+                                connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', [request.body.audience], function (queryError, list) {
+                                    if (queryError != null) {
+                                        log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                        json = {
+                                            error: "Requested action failed. Database could not be reached."
+                                        };
+                                        return response.status(500).json(json);
                                     }
-                                    message = 'Hi! A new poll for you!';
-                                    pushNote.sendAndroidPush(tokenList, message);
-                                    nonExistingUsers = nonExistingUsers.filter( function( element ) {
-                                        return phoneList.indexOf( element ) < 0;
-                                    });
-                                    sms.sendSMS(nonExistingUsers, message);
-                                }
-                            });
+                                    if (list) {
+                                        for (var t = 0; t < list.length; t++) {
+                                            if (list[t].device_token != null) {
+                                                tokenList.push(list[t].device_token);
+                                                phoneList.push(list[t].phone);
+                                            }
+                                        }
+                                        message = 'Hi! A new poll for you!';
+                                        pushNote.sendAndroidPush(tokenList, message);
+                                        nonExistingUsers = nonExistingUsers.filter(function (element) {
+                                            return phoneList.indexOf(element) < 0;
+                                        });
+                                        sms.sendSMS(nonExistingUsers, message);
+                                    }
+                                });
+                            }
                             log.info({Function: "Poll.Create"}, "New poll created successfully. Poll ID: " + pollID);
                             return response.sendStatus(200);
                         }
@@ -450,5 +424,40 @@ exports.show = function(request, response) {
     }
 };
 
+
+exports.update = function(request, response) {
+    var json;
+    try {
+        request.getConnection(function (connectionError, connection) {
+            if (connectionError != null) {
+                log.error(connectionError, "Database Connection Error (Function = Poll.Update)");
+                json = {
+                    error: "Poll Update failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            connection.query('UPDATE '+ config.mysql.db.name + '.poll SET is_active = ? WHERE id = ?', request.body.isActive, function(queryError, result) {
+                if (queryError != null) {
+                    log.error(queryError, "Query Error. Failed To Update poll details. Poll ID: " + request.params.id + " (Function = Poll.Update)");
+                    json = {
+                        error: "Requested Action Failed. Database could not be reached."
+                    };
+                    return response.status(500).json(json);
+                }
+                else {
+                    log.info({Function: "Poll.Update"}, "poll Updated Successfully. Poll Id: " + request.params.id);
+                    return response.sendStatus(200);
+                }
+            });
+        });
+    }
+    catch(error) {
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception Occurred (Function = PollList.Create)");
+        return response.status(500).json(json);
+    }
+};
 
 

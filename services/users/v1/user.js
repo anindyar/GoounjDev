@@ -216,7 +216,7 @@ exports.create = function(request, response) {
                                         }
 
                                         //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag, authCode, roleId, authTypeId, country, city, countryCode, deviceId, deviceToken, osType, osVersion
-                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.user (phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, auth_code, role_id, auth_type_id, country, city, country_code, device_id, device_token, os_type, os_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", request.body.country, request.body.city, util.getCountryCode(request.body.country), request.body.deviceId, request.body.deviceToken, request.body.osType, request.body.osVersion], function(queryError, user) {
+                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.user (phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, auth_code, role_id, auth_type_id, country, city, country_code, device_id, device_token, os_type, os_version, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", request.body.country, request.body.city, util.getCountryCode(request.body.country), request.body.deviceId, request.body.deviceToken, request.body.osType, request.body.osVersion, "1"], function(queryError, user) {
 
                                             if(queryError != null) {
                                                 log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= User Create)");
@@ -506,6 +506,9 @@ exports.update = function(request, response) {
                         if(request.body.country != null) {
                             jsonData['country'] = request.body.country;
                             jsonData['country_code'] = util.getCountryCode(request.body.country);
+                        }
+                        if(request.body.isActive != null) {
+                            jsonData['is_active'] = request.body.isActive;
                         }
                         if(request.body.city != null) {
                             jsonData['city'] = request.body.city;
