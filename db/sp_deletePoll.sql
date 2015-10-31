@@ -1,11 +1,11 @@
 USE `goounj`;
 DROP procedure IF EXISTS `deletePoll`;
-
-DELIMITER $$
-USE `goounj`$$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `deletePoll`(IN pollId int(45))
-    DETERMINISTIC
-    COMMENT 'Procedure to delete a poll'
+DELIMITER //
+CREATE PROCEDURE `deletePoll`(IN pollId int(45))
+LANGUAGE SQL
+DETERMINISTIC
+SQL SECURITY DEFINER
+COMMENT 'Procedure to delete a poll'
 BEGIN
 DECLARE questionId int;
 SET questionId := (SELECT id FROM question WHERE poll_id = pollId LIMIT 1);
@@ -25,6 +25,5 @@ WHERE
 DELETE FROM poll 
 WHERE
     id = pollId;
-END$$
-
+END//
 DELIMITER ;

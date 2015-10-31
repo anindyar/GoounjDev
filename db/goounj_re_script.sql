@@ -11,6 +11,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schema goounj
 -- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `goounj`;
 CREATE SCHEMA IF NOT EXISTS `goounj` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `goounj` ;
 
@@ -58,10 +59,11 @@ CREATE TABLE IF NOT EXISTS `goounj`.`user` (
   `country` VARCHAR(45) NULL,
   `city` VARCHAR(45) NULL,
   `country_code` INT NULL,
-  `device_id` VARCHAR(45) NULL,
-  `device_token` VARCHAR(45) NULL,
+  `device_id` VARCHAR(120) NULL,
+  `device_token` VARCHAR(200) NULL,
   `os_type` VARCHAR(45) NULL,
   `os_version` VARCHAR(45) NULL,
+  `is_active` TINYINT(1) UNSIGNED NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   INDEX `fk_user_role_idx` (`role_id` ASC),
   INDEX `fk_user_auth_type1_idx` (`auth_type_id` ASC),
@@ -123,6 +125,8 @@ CREATE TABLE IF NOT EXISTS `goounj`.`poll` (
   `reward_type_id` INT NOT NULL,
   `created_user_id` INT NOT NULL,
   `poll_type_id` INT NOT NULL,
+  `is_active` TINYINT(1) UNSIGNED NULL DEFAULT '1',
+  `is_generic` TINYINT(1) UNSIGNED NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   INDEX `fk_poll_visibility_type1_idx` (`visibility_type_id` ASC),
   INDEX `fk_poll_reward_type1_idx` (`reward_type_id` ASC),

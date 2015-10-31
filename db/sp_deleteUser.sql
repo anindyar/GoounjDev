@@ -1,4 +1,11 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `deleteUser`(IN userId INT(45))
+USE `goounj`;
+DROP procedure IF EXISTS `deleteUser`;
+DELIMITER //
+CREATE PROCEDURE `deleteUser`(IN userId INT(45))
+LANGUAGE SQL
+DETERMINISTIC
+SQL SECURITY DEFINER
+COMMENT 'Procedure to delete an user'
 BEGIN
 DECLARE pollId int;
 SET pollId := (SELECT id FROM poll WHERE created_user_id = userId LIMIT 1);
@@ -9,4 +16,5 @@ END WHILE;
 IF pollId IS NULL THEN
 		DELETE FROM user WHERE id = userId;
     END IF;
-END
+END//
+DELIMITER ;
