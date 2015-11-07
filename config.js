@@ -91,7 +91,7 @@ config = {
         }
     },
     userVerification: {
-        enabled: false
+        enabled: true
     }
 };
 
