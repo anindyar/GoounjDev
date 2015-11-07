@@ -65,7 +65,7 @@ config = {
         }
     },
     pushNotification: {
-        enabled: false,
+        enabled: true,
         android: {
             api_key: 'AIzaSyDsF2yFanZD302BOPk76a1EUCn1qgPqvH4'
         },
@@ -82,7 +82,7 @@ config = {
         }
     },
     sms: {
-        enabled: false,
+        enabled: true,
         adithya: {
             host: 'adithya.me',
             username: 'TRACKIDON',
