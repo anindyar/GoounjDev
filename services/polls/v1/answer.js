@@ -102,7 +102,7 @@ exports.create = function(request, response) {
                 }
                 connection.query('SELECT poll_name FROM poll WHERE id = ?', request.body.pollId, function(queryError, check) {
                     if (queryError != null) {
-                        log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                        log.error(queryError, "Query error. Failed to select audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
                         json = {
                             error: "Requested action failed. Database could not be reached."
                         };
@@ -121,7 +121,7 @@ exports.create = function(request, response) {
                             }
                             else{
                                 for(var i=0; i<questionAnswer.length; i++) {
-                                    connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, ?, ?, ?)', [utcTimeStamp, questionAnswer[i].questionId, questionAnswer[i].optionId, request.body.userId], function (queryError, result) {
+                                    connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, (SELECT id FROM question WHERE question = ?), (SELECT id FROM question_options WHERE option = ?), ?)', [utcTimeStamp, questionAnswer[i].question, questionAnswer[i].option, request.body.userId], function (queryError, result) {
                                         if (queryError != null) {
                                             log.error(queryError, "Query error. Failed to record a new answer. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
                                             json = {
