@@ -67,12 +67,12 @@ var moment = require('moment');
  *          "userId": "4",
  *          "questionList": [
  *                  {
- *                      "questionId": "13",
- *                      "optionId": "7"
+ *                      "question": "13",
+ *                      "option": "7"
  *                  },
  *                  {
- *                      "questionId": "14",
- *                      "optionId": "10"
+ *                      "question": "14",
+ *                      "option": "10"
  *                  }
  *             ]
  *     }

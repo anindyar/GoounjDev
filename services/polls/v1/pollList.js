@@ -83,6 +83,8 @@ var log = require('./../../../log');
  *     "created_user_id": 9,
  *     "poll_name": "Cinema",
  *     "is_answered": "0",
+ *     "is_active": 1,
+ *     "isGeneric": 1,
  *     "reward_type_id": 1,
  *     "visibility_type_id": 1,
  *     "poll_answered_time": null
@@ -99,6 +101,8 @@ var log = require('./../../../log');
  *     "created_user_id": 6,
  *     "poll_name": "Composer",
  *     "is_answered": "0",
+ *     "is_active": 1,
+ *     "isGeneric": 1,
  *     "reward_type_id": 1,
  *     "visibility_type_id": 1,
  *     "poll_answered_time": null
@@ -126,7 +130,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, (SELECT concat(first_name," ",last_name)) AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE user_id = ? OR is_generic = ? LIMIT ?', [request.body.userId, "1", request.body.limit], function(queryError, result) {
+                connection.query('(SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, (SELECT concat(first_name," ",last_name)) AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, (SELECT concat(first_name," ",last_name)) AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = ?) LIMIT ?', [request.body.userId, "1", request.body.limit], function(queryError, result) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
                         json = {
@@ -177,6 +181,7 @@ exports.create = function(request, response) {
  *          "start_date": "2015-10-23T04:39:20.000Z",
  *          "reward_type_id": 1,
  *          "is_boost": 0,
+ *          "is_active": 1,
  *          "end_date": "2015-10-23T04:39:20.000Z"
  *      },
  *      {
@@ -188,6 +193,8 @@ exports.create = function(request, response) {
  *          "start_date": "2015-10-23T05:30:04.000Z",
  *          "reward_type_id": 1,
  *          "is_boost": 0,
+ *          "is_active": 1,
+ *          "isGeneric": 1,
  *          "end_date": "2015-10-23T05:30:04.000Z"
  *      },
  *      {
@@ -199,6 +206,8 @@ exports.create = function(request, response) {
  *          "start_date": "2015-10-23T05:30:09.000Z",
  *          "reward_type_id": 1,
  *          "is_boost": 0,
+ *          "is_active": 1,
+ *          "isGeneric": 1,
  *          "end_date": "2015-10-23T05:30:09.000Z"
  *      }
  *    ]
