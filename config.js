@@ -85,9 +85,9 @@ config = {
         enabled: true,
         adithya: {
             host: 'adithya.me',
-            username: 'TRACKIDON',
-            password: 'ADMIN@123',
-            senderId: 'TRAKID'
+            username: 'bvocal',
+            password: 'IqEWSAOu',
+            senderId: 'GOOUNJ'
         }
     },
     userVerification: {
