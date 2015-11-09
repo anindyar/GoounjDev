@@ -112,7 +112,7 @@ exports.update = function(request, response) {
                         if(user[0].auth_code === request.body.authCode) {
                             connection.query('UPDATE '+ config.mysql.db.name +'.user SET is_verified=1 WHERE id = ?', request.params.id, function(queryError, result) {
                                 if (queryError != null) {
-                                    log.error(queryError, "Query Error. User Verification failed. Username: " + request.body.username + " (Function = Verification.Create)");
+                                    log.error(queryError, "Query Error. User Verification failed. UserID: " + request.params.id + " (Function = Verification.Create)");
                                     json = {
                                         error: "User Verification failed. Database could not be reached."
                                     };
@@ -122,10 +122,11 @@ exports.update = function(request, response) {
                                 }
                             });
                         } else {
-                            log.error(queryError, "User Verification Failed. Username: " + request.body.username + " (Function = Verification.Create)");
+                            log.error(queryError, "User Verification Failed. UserID: " + request.params.id + " (Function = Verification.Create)");
                             json = {
-                                error: "User Verification failed. Database could not be reached."
+                                error: "User Verification failed. Please check the auth code."
                             };
+                            return response.status(500).json(json);
                         }
                     }
                 }
