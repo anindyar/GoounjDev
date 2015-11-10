@@ -85,7 +85,7 @@ var moment = require('moment');
  *
  */
 exports.create = function(request, response) {
-    var jsn, phoneNumber;
+    var jsn;
     try {
         if((request.body.country != null && request.body.country.length != 0) && (request.body.city != null && request.body.city.length != 0) && (request.body.phone != null && request.body.phone.length != 0) && (request.body.deviceId != null && request.body.deviceId.length != 0) && (request.body.deviceToken != null && request.body.deviceToken.length != 0) && (request.body.osType != null && request.body.osType.length != 0) && (request.body.osVersion != null && request.body.osVersion.length != 0)) {
 
@@ -103,7 +103,6 @@ exports.create = function(request, response) {
                     log.info({Function: "User.Create"}, "Not a valid phone number. Phone:" + request.body.phone);
                     return response.status(400).json(jsn);
                 }
-                phoneNumber = util.getCountryCode(request.body.country) + request.body.phone.toString();
             }
 
             request.getConnection(function(connectionError, connection) {
@@ -163,9 +162,10 @@ exports.create = function(request, response) {
                             }
                             else {
                                 if(config.userVerification.enabled) {
-                                    if(config.sms.enabled) {
-                                        sms.sendSMS(phoneNumber, "This is Goounj OTP Service. Please enter the following verification code. NSM code: " + authCode);
-                                    }
+                                    var phoneArray = [];
+                                    phoneArray.push(request.body.phone);
+
+                                    sms.sendSMS(phoneArray, "This is Goounj OTP Service. Please enter the following verification code. Auth Code: " + authCode);
                                 }
                                 var userOBJ = user[6];
                                 var publickkeyOBJ = user[4];
@@ -227,9 +227,10 @@ exports.create = function(request, response) {
                                             }
                                             else {
                                                 if(config.userVerification.enabled) {
-                                                    if(config.sms.enabled) {
-                                                        sms.sendSMS(phoneNumber, "This is Goounj OTP Service. Please enter the following verification code. NSM code: " + authCode);
-                                                    }
+                                                    var phoneArray = [];
+                                                    phoneArray.push(request.body.phone);
+
+                                                    sms.sendSMS(phoneArray, "This is Goounj OTP Service. Please enter the following verification code. Auth Code: " + authCode);
                                                 }
                                                 var userID = user.insertId;
                                                 jsn = {

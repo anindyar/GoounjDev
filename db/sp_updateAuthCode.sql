@@ -7,7 +7,7 @@ DETERMINISTIC
 SQL SECURITY DEFINER
 COMMENT 'Procedure to create a new user'
 BEGIN
-UPDATE user SET auth_code = authCode, is_verified = userVerified WHERE phone = phone;
+UPDATE user SET auth_code = authCode, is_verified = userVerified WHERE phone = phoneNumber;
 SELECT secret_key, public_key, id
 INTO secretKey, publicKey, userId
 FROM user
