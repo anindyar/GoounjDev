@@ -34,5 +34,9 @@ exports.getCountryCode = function(country) {
     var countryData = getCode.find(data, function(entry) {
         return(entry.name.common == country)
     });
-    return countryData.callingCode;
+
+    if(countryData == null)
+        return "Undefined";
+    else
+        return countryData.callingCode;
 };

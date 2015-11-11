@@ -114,7 +114,7 @@ exports.create = function(request, response) {
                     return response.status(500).json(jsn);
                 }
 
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.user WHERE phone = ? AND country = ?', [request.body.phone, request.body.country], function(queryError, result) {
+                connection.query('SELECT * FROM '+ config.mysql.db.name +'.user WHERE phone = ?', [request.body.phone], function(queryError, result) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. Failed to create a new user. User Details: " + JSON.stringify(request.body.phone) + "(Function = User.Create)");
                         jsn = {
@@ -213,6 +213,14 @@ exports.create = function(request, response) {
                                         }
                                         else {
                                             verificationFlag = 1;
+                                        }
+
+                                        if(util.getCountryCode(request.body.country) == "Undefined") {
+                                            jsn = {
+                                                error: "Invalid Country Name"
+                                            };
+                                            log.info({Function: "User.Create"}, "Invalid Country Name. Country Name: " + JSON.stringify(request.body.country));
+                                            return response.status(500).json(jsn);
                                         }
 
                                         //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag, authCode, roleId, authTypeId, country, city, countryCode, deviceId, deviceToken, osType, osVersion
