@@ -94,7 +94,7 @@ config = {
         enabled: true
     },
     poll: {
-        expiresAfter: '28'
+        expiresAfter: 28
     }
 };
 

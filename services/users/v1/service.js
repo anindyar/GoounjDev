@@ -37,6 +37,10 @@ module.exports = {
             name: 'login',
             methods: require('./login'),
             auth: 'bypass'
+        },{
+            name: 'logout',
+            methods: require('./logout'),
+            auth: 'bypass'
         }, {
             name: 'verification',
             methods: require('./verification'),
