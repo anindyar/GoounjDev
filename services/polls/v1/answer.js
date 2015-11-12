@@ -67,12 +67,12 @@ var moment = require('moment');
  *          "userId": "4",
  *          "questionList": [
  *                  {
- *                      "question": "13",
- *                      "option": "7"
+ *                      "question": "Who is the best cricketer?",
+ *                      "option": "Sachin"
  *                  },
  *                  {
- *                      "question": "14",
- *                      "option": "10"
+ *                      "question": "Who is the best footballer?",
+ *                      "option": "Messi"
  *                  }
  *             ]
  *     }
