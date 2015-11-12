@@ -92,6 +92,9 @@ config = {
     },
     userVerification: {
         enabled: true
+    },
+    poll: {
+        expiresAfter: '28'
     }
 };
 
