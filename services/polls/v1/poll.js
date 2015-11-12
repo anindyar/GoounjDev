@@ -120,7 +120,7 @@ var pushNote = require('./../../../push');
 exports.create = function(request, response) {
     var json, phoneNumber, message;
     try {
-        if((request.body.pollName != null)  && (request.body.questionList != null) && (request.body.audience != null)  && (request.body.audience.length != null)) {
+        if((request.body.pollName != null)  && (request.body.questionList != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = Poll.Create)");
@@ -185,7 +185,7 @@ exports.create = function(request, response) {
                                 }
                             });
 
-                            if(request.body.audienceList != null && request.body.audienceList.length != null) {
+                            if(request.body.audience != null && request.body.audience.length != null) {
                                 var audienceList = request.body.audience;
                                 var tokenList = [], phoneList = [], nonExistingUsers = request.body.audience;
 
