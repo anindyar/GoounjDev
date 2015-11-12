@@ -72,7 +72,7 @@ app.disable('x-powered-by');
 app.use(enableCORS);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(myConnection(mysql, dbOptions, 'request'));
+app.use(myConnection(mysql, dbOptions, 'pool'));
 app.use(requestLog);
 
 log.info({Function: "init"}, config.name + " version " + config.version + " Scanning " + __dirname + "/services for service modules");
