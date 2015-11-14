@@ -136,7 +136,7 @@ exports.create = function(request, response) {
                         }
                         return response.sendStatus(200);
                     }
-                    else if(item.is_generic == 0) {
+                    else if(item[0].is_generic == 0) {
                         connection.query('SELECT user_id FROM audience_poll_map WHERE poll_id = ?', request.body.pollId, function(queryError, check) {
                             if (queryError != null) {
                                 log.error(queryError, "Query error. Failed to select audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
