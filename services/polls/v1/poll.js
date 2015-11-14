@@ -418,8 +418,6 @@ exports.show = function(request, response) {
 
 
                         resultSet.forEach(function(entry) {
-                            console.log(entry);
-                            console.log(questionObj);
                             if (typeof questionObj[entry.question] == "undefined") {
                                 questionObj[entry.question] = [];
                             }
