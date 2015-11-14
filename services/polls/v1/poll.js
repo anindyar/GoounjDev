@@ -416,16 +416,19 @@ exports.show = function(request, response) {
                         };
                         var questionObj = {};
 
+
                         resultSet.forEach(function(entry) {
+                            console.log(entry);
+                            console.log(questionObj);
                             if (typeof questionObj[entry.question] == "undefined") {
                                 questionObj[entry.question] = [];
                             }
                             var choiceObj = {
                                 choice:         entry.choices,
-                                optionId:       entry.optionId
+                                optionId:       entry.optionId,
+                                questionId:     entry.questionId
                             };
                             questionObj[entry.question].push(choiceObj);
-
                         });
 
                         for (var question in questionObj) {
@@ -434,7 +437,7 @@ exports.show = function(request, response) {
                                     choices: questionObj[question],
                                     questionType: "text",
                                     question: question,
-                                    questionId: resultSet[0].questionId
+                                    questionId: questionObj[question][0].questionId
                                 });
                             }
                         }
