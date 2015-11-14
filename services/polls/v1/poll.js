@@ -118,7 +118,7 @@ var pushNote = require('./../../../push');
 
 
 exports.create = function(request, response) {
-    var json, phoneNumber, message;
+    var json, message;
     try {
         if((request.body.pollName != null)  && (request.body.questionList != null)) {
             request.getConnection(function(connectionError, connection) {
@@ -192,7 +192,9 @@ exports.create = function(request, response) {
                                 for (var k = 0; k < audienceList.length; k++) {
                                     (function () {
                                         var kCopy = k;
-                                        connection.query('CALL setAudienceForPoll(?, ?);', [audienceList[kCopy], pollID], function (queryError, user) {
+                                        var number = audienceList[kCopy];
+                                        number = number.replace(/\s+/g, '').substr(-10);
+                                        connection.query('CALL setAudienceForPoll(?, ?);', [number, pollID], function (queryError, user) {
 
                                             if (queryError != null) {
                                                 log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
@@ -321,34 +323,55 @@ exports["delete"] = function(request, response) {
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
  *     {
- *          "visibilityType": "visible",
- *          "category": "sports",
- *          "isBoost": 0,
- *          "pollType": "opinion",
- *          "rewardType": "free",
- *          "questionList": [
- *              {
- *                  "choices": [
- *                      "Messi",
- *                      "Ronaldo",
- *                      "Suarez"
- *                      ],
- *          "questionType": "text",
- *          "question": "Who is the best striker?"
- *              },
- *              {
- *                  "choices": [
- *                      "Messi",
- *                      "Ronaldo",
- *                      "Suarez"
- *                      ],
- *          "questionType": "text",
- *          "question": "Who is the top goal scorer?"
- *              }
- *           ],
- *     "pollName": "Best Footballer",
- *     "createdUserId": 6
+ *     "category": "Sports",
+ *     "createdUser": "Kennet Paul",
+ *     "visibilityType": "visible",
+ *     "isBoost": 0,
+ *     "pollType": "opinion",
+ *     "rewardType": "free",
+ *     "questionList": [
+ *     {
+ *     "questionType": "text",
+ *     "questionId": 9,
+ *     "question": "Who is the best striker?",
+ *     "choices": [
+ *     {
+ *     "optionId": 22,
+ *     "choice": "Messi"
+ *     },
+ *     {
+ *     "optionId": 23,
+ *     "choice": "Ronaldo"
+ *     },
+ *     {
+ *     "optionId": 24,
+ *     "choice": "Suarez"
  *     }
+ *     ]
+ *     },
+ *     {
+ *     "questionType": "text",
+ *     "questionId": 9,
+ *     "question": "Who is the top goal scorer?",
+ *     "choices": [
+ *     {
+ *     "optionId": 25,
+ *     "choice": "Messi"
+ *     },
+ *     {
+ *     "optionId": 26,
+ *     "choice": "Ronaldo"
+ *     },
+ *     {
+ *     "optionId": 27,
+ *     "choice": "Suarez"
+ *     }
+ *     ]
+ *     }
+ *     ],
+ *     "pollName": "Best Footballer",
+ *     "createdUserId": 2
+ *
  *
  *
  * @apiUse DatabaseError
@@ -371,7 +394,7 @@ exports.show = function(request, response) {
                 return response.status(500).json(json);
             }
 
-            connection.query('SELECT poll.poll_name AS pollName, poll.is_boost AS isBoost, (SELECT type FROM poll_type WHERE id = poll.poll_type_id) AS pollType, (SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, (SELECT type FROM visibility_type WHERE id = poll.visibility_type_id) AS visibilityType, (SELECT type FROM reward_type WHERE id = poll.reward_type_id) AS rewardType, poll.created_user_id AS createdUserId, (SELECT CONCAT(first_name," ",last_name) FROM user WHERE id = poll.created_user_id) AS createdUser, question.question, (SELECT type FROM question_type WHERE id = question.question_type_id) AS questionType, question_options.`option` AS choices FROM user INNER JOIN poll ON poll.created_user_id = user.id INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, resultSet) {
+            connection.query('SELECT poll.poll_name AS pollName, poll.is_boost AS isBoost, (SELECT type FROM poll_type WHERE id = poll.poll_type_id) AS pollType, (SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, (SELECT type FROM visibility_type WHERE id = poll.visibility_type_id) AS visibilityType, (SELECT type FROM reward_type WHERE id = poll.reward_type_id) AS rewardType, poll.created_user_id AS createdUserId, (SELECT CONCAT(first_name," ",last_name) FROM user WHERE id = poll.created_user_id) AS createdUser, question.question, question.id AS questionId, (SELECT type FROM question_type WHERE id = question.question_type_id) AS questionType, question_options.`option` AS choices, question_options.id AS optionId FROM user INNER JOIN poll ON poll.created_user_id = user.id INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, resultSet) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch poll details. Poll ID: " + JSON.stringify(request.params.id) + "(Function= Poll Show)");
                     json = {
@@ -397,7 +420,12 @@ exports.show = function(request, response) {
                             if (typeof questionObj[entry.question] == "undefined") {
                                 questionObj[entry.question] = [];
                             }
-                            questionObj[entry.question].push(entry.choices);
+                            var choiceObj = {
+                                choice:         entry.choices,
+                                optionId:       entry.optionId
+                            };
+                            questionObj[entry.question].push(choiceObj);
+
                         });
 
                         for (var question in questionObj) {
@@ -405,7 +433,8 @@ exports.show = function(request, response) {
                                 jsonOutput.questionList.push({
                                     choices: questionObj[question],
                                     questionType: "text",
-                                    question: question
+                                    question: question,
+                                    questionId: resultSet[0].questionId
                                 });
                             }
                         }
