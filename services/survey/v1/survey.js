@@ -118,7 +118,7 @@ exports.create = function(request, response) {
                         var userId = userObj[0].userId;
                         var questionAnswer = request.body.questionList;
                         for(var i=0; i<questionAnswer.length; i++) {
-                            connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, (SELECT id FROM question WHERE question = ?), (SELECT id FROM question_options WHERE option = ?), ?)', [utcTimeStamp, questionAnswer[i].question, questionAnswer[i].option, userId], function (queryError, result) {
+                            connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, ?, ?, ?)', [utcTimeStamp, questionAnswer[i].questionId, questionAnswer[i].optionId, userId], function (queryError, result) {
                                 if (queryError != null) {
                                     log.error(queryError, "Query error. Failed to record a new answer. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Survey.Create)");
                                     json = {
