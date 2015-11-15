@@ -221,14 +221,14 @@ exports.create = function(request, response) {
                                         };
                                         return response.status(500).json(json);
                                     }
-                                    if (list) {
+                                    if (list[0].device_token != null) {
                                         for (var t = 0; t < list.length; t++) {
                                             if (list[t].device_token != null) {
                                                 tokenList.push(list[t].device_token);
                                                 phoneList.push(list[t].phone);
                                             }
                                         }
-                                        message = 'Hi! A new poll for you!';
+                                        message = 'GOOUNJ: Do you want to answer the poll: ' + request.body.pollName + '? Install Goounj App to answer! Enjoy polling with GOOUNJ~opinion matters~';
                                         pushNote.sendAndroidPush(tokenList, message);
                                         nonExistingUsers = nonExistingUsers.filter(function (element) {
                                             return phoneList.indexOf(element) < 0;
