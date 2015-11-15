@@ -123,7 +123,6 @@ exports.create = function(request, response) {
                         return response.status(500).json(jsn);
                     }
                     if (result[0]) {
-                        console.log(result[0]);
                         if (result[0].device_token != request.body.deviceToken) {
                             var jsnData = {};
                             jsnData['device_id'] = request.body.deviceId;

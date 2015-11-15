@@ -181,7 +181,7 @@ exports.create = function(request, response) {
                                 }());
                             }
 
-                            connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE name = ?))', [pollID, request.body.category], function (queryError, poll) {
+                            connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE `name` = ?))', [pollID, request.body.category], function (queryError, poll) {
                                 if (queryError != null) {
                                     log.error(queryError, "Query error. Failed to map poll to category. Category: " + JSON.stringify(request.body.category) + "(Function= Poll Create)");
                                     json = {
