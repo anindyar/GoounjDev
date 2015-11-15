@@ -180,7 +180,7 @@ exports.create = function(request, response) {
                                     });
                                 }());
                             }
-                            console.log(request.body.category);
+
                             connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE name = ?))', [pollID, request.body.category], function (queryError, poll) {
                                 if (queryError != null) {
                                     log.error(queryError, "Query error. Failed to map poll to category. Category: " + JSON.stringify(request.body.category) + "(Function= Poll Create)");
@@ -221,14 +221,14 @@ exports.create = function(request, response) {
                                         };
                                         return response.status(500).json(json);
                                     }
-                                    if (list[0].device_token != null) {
+                                    if (list) {
                                         for (var t = 0; t < list.length; t++) {
                                             if (list[t].device_token != null) {
                                                 tokenList.push(list[t].device_token);
                                                 phoneList.push(list[t].phone);
                                             }
                                         }
-                                        message = 'GOOUNJ: Do you want to answer the poll: ' + request.body.pollName + '? Install Goounj App to answer! Enjoy polling with GOOUNJ~opinion matters~';
+                                        message = 'GOOUNJ: You have a poll to answer. Install Goounj to enjoy unlimited polling!';
                                         pushNote.sendAndroidPush(tokenList, message);
                                         nonExistingUsers = nonExistingUsers.filter(function (element) {
                                             return phoneList.indexOf(element) < 0;
