@@ -81,5 +81,7 @@ INSERT INTO `question` VALUES (1,'Who is the best footballer?',1,1),(2,'Who is t
 UNLOCK TABLES;
 LOCK TABLES `question_options` WRITE;
 INSERT INTO `question_options` VALUES (1,'Messi',1),(2,'Ronaldo',1),(3,'Ibrahimovic',1),(4,'Messi',2),(5,'Ronaldo',2),(6,'Lewandoski',2);
+UNLOCK TABLES;
+LOCK TABLES `category_poll_map` WRITE;
 INSERT INTO `goounj`.`category_poll_map` (`poll_id`, `category_id`) VALUES ('1', '4');
 UNLOCK TABLES;

@@ -114,7 +114,7 @@ exports.create = function(request, response) {
                     return response.status(500).json(jsn);
                 }
 
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.user WHERE phone = ?', [request.body.phone], function(queryError, result) {
+                connection.query('SELECT id FROM '+ config.mysql.db.name +'.user WHERE phone = ?', [request.body.phone], function(queryError, result) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. Failed to create a new user. User Details: " + JSON.stringify(request.body.phone) + "(Function = User.Create)");
                         jsn = {
@@ -122,7 +122,7 @@ exports.create = function(request, response) {
                         };
                         return response.status(500).json(jsn);
                     }
-                    if (result[0]) {
+                    if (result[0].id != "" && result[0].id != null) {
 
                         if (result[0].device_token != request.body.deviceToken) {
                             var jsnData = {};
@@ -484,7 +484,7 @@ exports.update = function(request, response) {
                 return response.status(500).json(json);
             }
 
-            connection.query('SELECT * FROM ' + config.mysql.db.name + '.user WHERE id = ?', request.params.id, function (queryError, result) {
+            connection.query('SELECT id FROM ' + config.mysql.db.name + '.user WHERE id = ?', request.params.id, function (queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Update User Details. User ID: " + request.params.id + " (Function = User.Update)");
                     json = {
@@ -492,7 +492,7 @@ exports.update = function(request, response) {
                     };
                     return response.status(500).json(json);
                 } else {
-                    if (result[0]) {
+                    if (result[0].id != "" && result[0].id != null) {
                         if ((request.body.publickey != null) || (request.body.secret != null) || (request.body.user_id != null) || (request.body.access_time != null) || (request.body.updated_time != null) || (request.body.created_time != null)) {
                             json = {
                                 error: "Failed To Update The User Details"
@@ -507,10 +507,6 @@ exports.update = function(request, response) {
                         }
                         if (request.body.lname != null) {
                             jsonData['last_name'] = request.body.lname;
-                        }
-                        if(request.body.user_image != null) {
-
-
                         }
                         if(request.body.country != null) {
                             jsonData['country'] = request.body.country;
@@ -530,9 +526,6 @@ exports.update = function(request, response) {
                                 };
                                 log.info({Function: "User.Update"}, "Not a valid email address. Email:" + request.body.email);
                                 return response.status(400).json(json);
-                            }
-                            if (result[0].email === result[0].user_name) {
-                                jsonData['user_name'] = request.body.email.toLowerCase();
                             }
                             jsonData['email'] = request.body.email.toLowerCase();
                         }
@@ -560,19 +553,6 @@ exports.update = function(request, response) {
                             var randomBytes = crypto.randomBytes(24);
                             var encodedPassword = crypto.pbkdf2Sync(request.body.password, randomBytes.toString("base64"), config.hashIterations, 24);
                             jsonData['password'] = config.hashIterations + ":" + randomBytes.toString("base64") + ":" + (encodedPassword.toString("base64"));
-                        }
-                        if (request.body.username != null) {
-                            emailFilter = config.emailFilterRegex;
-                            if (!emailFilter.test(request.body.username)) {
-                                json = {
-                                    error: "Not a valid username. Username should be an email address"
-                                };
-                                log.info({Function: "User.Update"}, "Not a valid username. Username should be an email address. Username:" + request.body.username);
-                                return response.status(400).json(json);
-                            }
-                            if (result[0].email != result[0].user_name) {
-                                jsonData['user_name'] = request.body.username.toLowerCase();
-                            }
                         }
 
                         var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
