@@ -10,6 +10,7 @@ BEGIN
 DECLARE questionId int;
 SET questionId := (SELECT id FROM question WHERE poll_id = pollId LIMIT 1);
 WHILE (questionId IS NOT NULL) DO
+    DELETE FROM answer WHERE question_id = questionId;
 	DELETE FROM question_options WHERE question_id = questionId;
 DELETE FROM question 
 WHERE
