@@ -121,7 +121,7 @@ var pushNote = require('./../../../push');
 exports.create = function(request, response) {
     var json, message;
     try {
-        if((request.body.pollName != null)  && (request.body.questionList != null)) {
+        if((request.body.pollName != null)  && (request.body.questionList != null) && (request.body.category != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = Poll.Create)");
@@ -180,8 +180,8 @@ exports.create = function(request, response) {
                                     });
                                 }());
                             }
-
-                            connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE name=?))', [pollID, request.body.category], function (queryError, poll) {
+                            console.log(request.body.category);
+                            connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE name = ?))', [pollID, request.body.category], function (queryError, poll) {
                                 if (queryError != null) {
                                     log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
                                     json = {
