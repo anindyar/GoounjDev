@@ -135,7 +135,12 @@ exports.create = function(request, response) {
                     var dat = new Date().setDate(new Date().getDate() + config.poll.expiresAfter);
                     var utcTimeStampEnd = moment(dat).format('YYYY/MM/DD HH:mm:ss');
 
-                    connection.query('INSERT INTO ' + config.mysql.db.name +'.poll (start_date, end_date, poll_name, is_boost, visibility_type_id, reward_type_id, created_user_id, poll_type_id, is_active, is_generic) VALUES (?, ?, ?, ?, (SELECT id FROM visibility_type WHERE type=?), (SELECT id FROM reward_type WHERE type=?), ?, (SELECT id FROM poll_type WHERE type=?), ?, ?)', [utcTimeStamp, utcTimeStampEnd, request.body.pollName, request.body.isBoost, request.body.visibilityType, request.body.rewardType, request.body.createdUserId, request.body.pollType, "1", request.body.isGeneric], function (queryError, poll) {
+                    var isGeneric = request.body.isGeneric;
+                    if(request.body.isGeneric == null) {
+                        isGeneric = '0';
+                    }
+
+                    connection.query('INSERT INTO ' + config.mysql.db.name +'.poll (start_date, end_date, poll_name, is_boost, visibility_type_id, reward_type_id, created_user_id, poll_type_id, is_active, is_generic) VALUES (?, ?, ?, ?, (SELECT id FROM visibility_type WHERE type=?), (SELECT id FROM reward_type WHERE type=?), ?, (SELECT id FROM poll_type WHERE type=?), ?, ?)', [utcTimeStamp, utcTimeStampEnd, request.body.pollName, request.body.isBoost, request.body.visibilityType, request.body.rewardType, request.body.createdUserId, request.body.pollType, "1", isGeneric], function (queryError, poll) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
                             json = {
