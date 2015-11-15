@@ -12,7 +12,7 @@ IF userId IS NULL THEN
     INSERT IGNORE INTO user (phone, role_id, auth_type_id) VALUES (phoneNumber, '1', '1');
     SET userId := LAST_INSERT_ID(); -- LAST_INSERT_ID() can give you the real, surrogate key
 END IF;
-UPDATE user SET first_name = fname, last_name = lname WHERE user_id = userId;
+UPDATE user SET first_name = fname, last_name = lname WHERE id = userId;
 INSERT INTO audience_poll_map (user_id, poll_id, poll_answered_time, is_answered) VALUES (userId, pollId, utcTimeStamp, 1);
 
 END//

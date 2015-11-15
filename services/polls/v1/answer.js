@@ -159,7 +159,6 @@ exports.create = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             else if(check[0]) {
-                                console.log(check[0]);
                                 connection.query('UPDATE '+ config.mysql.db.name + '.audience_poll_map SET poll_answered_time = ?, is_answered = 1 WHERE poll_id = ? AND user_id = ?', [utcTimeStamp, request.body.pollId, request.body.userId], function(queryError, action) {
                                     if (queryError != null) {
                                         log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
