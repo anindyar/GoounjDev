@@ -150,7 +150,7 @@ exports.create = function(request, response) {
                         return response.sendStatus(200);
                     }
                     else if(item[0].is_generic == 0) {
-                        connection.query('SELECT user_id FROM audience_poll_map WHERE poll_id = ?', request.body.pollId, function(queryError, check) {
+                        connection.query('SELECT user_id FROM audience_poll_map WHERE poll_id = ? AND user_id = ?', [request.body.pollId, request.body.userId], function(queryError, check) {
                             if (queryError != null) {
                                 log.error(queryError, "Query error. Failed to select audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
                                 json = {
@@ -158,7 +158,8 @@ exports.create = function(request, response) {
                                 };
                                 return response.status(500).json(json);
                             }
-                            else if(check) {
+                            else if(check[0]) {
+                                console.log(check[0]);
                                 connection.query('UPDATE '+ config.mysql.db.name + '.audience_poll_map SET poll_answered_time = ?, is_answered = 1 WHERE poll_id = ? AND user_id = ?', [utcTimeStamp, request.body.pollId, request.body.userId], function(queryError, action) {
                                     if (queryError != null) {
                                         log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
