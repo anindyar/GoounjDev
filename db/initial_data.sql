@@ -63,7 +63,7 @@ INSERT INTO `goounj`.`category` (`name`) VALUES ('Photography');
 INSERT INTO `goounj`.`category` (`name`) VALUES ('Food & Beverages');
 INSERT INTO `goounj`.`category` (`name`) VALUES ('Beauty & Personal Care');
 INSERT INTO `goounj`.`category` (`name`) VALUES ('Life & Concepts');
-INSERT INTO `goounj`.`category` (`name`) VALUES ('Others​');
+INSERT INTO `goounj`.`category` (`name`) VALUES ('Others');
 
 --
 -- Dumping data for initial user
