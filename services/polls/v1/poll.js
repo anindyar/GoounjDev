@@ -119,7 +119,7 @@ var pushNote = require('./../../../push');
 
 
 exports.create = function(request, response) {
-    var json, message;
+    var json;
     try {
         if((request.body.pollName != null)  && (request.body.questionList != null) && (request.body.category != null)) {
             request.getConnection(function(connectionError, connection) {
@@ -228,12 +228,12 @@ exports.create = function(request, response) {
                                                 phoneList.push(list[t].phone);
                                             }
                                         }
-                                        message = 'GOOUNJ: You have a poll to answer. Install Goounj to enjoy unlimited polling!';
-                                        pushNote.sendAndroidPush(tokenList, message);
+
+                                        pushNote.sendAndroidPush(tokenList, config.pushNotification.message);
                                         nonExistingUsers = nonExistingUsers.filter(function (element) {
                                             return phoneList.indexOf(element) < 0;
                                         });
-                                        sms.sendSMS(nonExistingUsers, message);
+                                        sms.sendSMS(nonExistingUsers, config.sms.message);
                                     }
                                 });
                             }

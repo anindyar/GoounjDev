@@ -71,7 +71,8 @@ config = {
         },
         ios: {
 
-        }
+        },
+        message: 'Hi! You have a new poll to answer.'
     },
     email: {
         enabled: false,
@@ -87,7 +88,8 @@ config = {
             host: 'adithya.me',
             username: 'bvocal',
             password: 'IqEWSAOu',
-            senderId: 'GOOUNJ'
+            senderId: 'GOOUNJ',
+            message: 'GOOUNJ: You have a poll to answer. Install Goounj to enjoy unlimited polling!'
         }
     },
     userVerification: {
