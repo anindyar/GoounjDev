@@ -117,7 +117,6 @@ var pushNote = require('./../../../push');
  *
  */
 
-
 exports.create = function(request, response) {
     var json;
     try {
