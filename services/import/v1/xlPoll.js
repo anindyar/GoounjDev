@@ -208,20 +208,20 @@ exports.create = function(request, response) {
                                 // Append the option list query with the final query
                                 finalQueryText += optionListQuery;
                                 optionListQuery = "";
-
-                                console.log(finalQueryText);
-
-                                dbConnection.query(finalQueryText, function(queryError, results) {
-                                    if (queryError != null) {
-                                        log.error(queryError, "Query error. Failed to create a new poll. (Function= Poll Create)");
-                                        json = {
-                                            error: "Requested action failed. Database could not be reached."
-                                        };
-                                        return response.status(500).json(json);
-                                    }
-                                });
                             } b = b + 7;
                         }
+
+                        console.log(finalQueryText);
+
+                        dbConnection.query(finalQueryText, function(queryError, results) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to create a new poll. (Function= Poll Create)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                        });
 
                         function formPollQuery(connection, utcTimeStamp, utcTimeStampEnd, pollName, isBoost, visibilityType, rewardType, createdUserId, pollType, isActive, isGeneric) {
                             var queryText = 'INSERT INTO ' + config.mysql.db.name +'.poll (start_date, end_date, poll_name, is_boost, visibility_type_id, reward_type_id, created_user_id, poll_type_id, is_active, is_generic) VALUES (' + connection.escape(utcTimeStamp) + ', ' + connection.escape(utcTimeStampEnd) + ', ' + connection.escape(pollName) + ', ' + connection.escape(isBoost) + ', (SELECT id FROM visibility_type WHERE type='+ connection.escape(visibilityType) +'), (SELECT id FROM reward_type WHERE type='+ connection.escape(rewardType) +'), '+ connection.escape(createdUserId) +', (SELECT id FROM poll_type WHERE type='+ connection.escape(pollType) +'), '+ connection.escape(isActive) +', '+ connection.escape(isGeneric) +'); SET @pollID = LAST_INSERT_ID();';
