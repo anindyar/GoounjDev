@@ -157,12 +157,8 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                var counter = 0;
-                console.log(obj[0].data.length);
                 for(a = 1; a < obj[0].data.length; a++) {
                     if(obj[0].data[a].length != []) {
-                        counter++;
-                        console.log(counter);
                         var finalQueryText = "";
 
                         var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
@@ -210,8 +206,6 @@ exports.create = function(request, response) {
                                 optionListQuery = "";
                             } b = b + 7;
                         }
-
-                        console.log(finalQueryText);
 
                         dbConnection.query(finalQueryText, function(queryError, results) {
                             if (queryError != null) {
