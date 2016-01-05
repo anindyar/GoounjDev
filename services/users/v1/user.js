@@ -107,7 +107,7 @@ exports.create = function(request, response) {
 
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
-                    log.error(connectionError, "Database connection error (Function = User.Create");
+                    log.error(connectionError, "Database connection error (Function = User.Create)");
                     jsn = {
                         error: "User Create failed. Database could not be reached."
                     };
