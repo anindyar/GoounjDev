@@ -1,701 +1,512 @@
--- MySQL dump 10.13  Distrib 5.6.19, for osx10.7 (i386)
---
--- Host: 127.0.0.1    Database: goounj
--- ------------------------------------------------------
--- Server version	5.6.25
+-- MySQL Workbench Forward Engineering
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
 -- Schema goounj
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `goounj`;
+
+-- -----------------------------------------------------
+-- Schema goounj
+-- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `goounj` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `goounj` ;
 
---
--- Table structure for table `answer`
---
+-- -----------------------------------------------------
+-- Table `goounj`.`role`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`role` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
-DROP TABLE IF EXISTS `answer`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `answer` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `time` datetime NOT NULL,
-  `question_id` int(11) NOT NULL,
-  `question_options_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
+
+-- -----------------------------------------------------
+-- Table `goounj`.`auth_type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`auth_type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`user`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`user` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `first_name` VARCHAR(45) NULL,
+  `last_name` VARCHAR(45) NULL,
+  `email` VARCHAR(45) NULL,
+  `phone` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(120) NULL,
+  `public_key` VARCHAR(120) NULL,
+  `secret_key` VARCHAR(200) NULL,
+  `gender` VARCHAR(45) NULL,
+  `dob` VARCHAR(45) NULL,
+  `access_time` DATETIME NULL,
+  `created_time` DATETIME NULL,
+  `updated_time` DATETIME NULL,
+  `is_verified` TINYINT(1) UNSIGNED NULL DEFAULT '1',
+  `auth_code` VARCHAR(45) NULL,
+  `role_id` INT NOT NULL,
+  `auth_type_id` INT NOT NULL,
+  `country` VARCHAR(45) NULL,
+  `city` VARCHAR(45) NULL,
+  `country_code` INT NULL,
+  `device_id` VARCHAR(120) NULL,
+  `device_token` VARCHAR(200) NULL,
+  `os_type` VARCHAR(45) NULL,
+  `os_version` VARCHAR(45) NULL,
+  `is_active` TINYINT(1) UNSIGNED NULL DEFAULT '1',
   PRIMARY KEY (`id`),
-  KEY `fk_answer_question1_idx` (`question_id`),
-  KEY `fk_answer_question_options1_idx` (`question_options_id`),
-  KEY `fk_answer_user1_idx` (`user_id`),
-  CONSTRAINT `fk_answer_question1` FOREIGN KEY (`question_id`) REFERENCES `question` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_answer_question_options1` FOREIGN KEY (`question_options_id`) REFERENCES `question_options` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_answer_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  INDEX `fk_user_role_idx` (`role_id` ASC),
+  INDEX `fk_user_auth_type1_idx` (`auth_type_id` ASC),
+  UNIQUE INDEX `phone_UNIQUE` (`phone` ASC),
+  CONSTRAINT `fk_user_role`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `goounj`.`role` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_auth_type1`
+    FOREIGN KEY (`auth_type_id`)
+    REFERENCES `goounj`.`auth_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `answer`
---
 
-LOCK TABLES `answer` WRITE;
-/*!40000 ALTER TABLE `answer` DISABLE KEYS */;
-/*!40000 ALTER TABLE `answer` ENABLE KEYS */;
-UNLOCK TABLES;
+-- -----------------------------------------------------
+-- Table `goounj`.`visibility_type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`visibility_type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
---
--- Table structure for table `audience_poll_map`
---
 
-DROP TABLE IF EXISTS `audience_poll_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `audience_poll_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `poll_id` int(11) NOT NULL,
-  `is_skipped` tinyint(1) DEFAULT '0',
-  `poll_answered_time` datetime DEFAULT NULL,
-  `is_answered` tinyint(1) DEFAULT '0',
+-- -----------------------------------------------------
+-- Table `goounj`.`reward_type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`reward_type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(45) NOT NULL,
+  `points` INT NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`poll_type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`poll_type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`poll`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`poll` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `start_date` DATETIME NOT NULL,
+  `end_date` DATETIME NOT NULL,
+  `poll_name` VARCHAR(45) NOT NULL,
+  `is_boost` TINYINT(1) NULL DEFAULT '0',
+  `visibility_type_id` INT NOT NULL,
+  `reward_type_id` INT NOT NULL,
+  `created_user_id` INT NOT NULL,
+  `poll_type_id` INT NOT NULL,
+  `is_active` TINYINT(1) UNSIGNED NULL DEFAULT '1',
+  `is_generic` TINYINT(1) UNSIGNED NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `fk_user_poll_map_user1_idx` (`user_id`),
-  KEY `fk_user_poll_map_poll1_idx` (`poll_id`),
-  CONSTRAINT `fk_user_poll_map_poll1` FOREIGN KEY (`poll_id`) REFERENCES `poll` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_poll_map_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  INDEX `fk_poll_visibility_type1_idx` (`visibility_type_id` ASC),
+  INDEX `fk_poll_reward_type1_idx` (`reward_type_id` ASC),
+  INDEX `fk_poll_user1_idx` (`created_user_id` ASC),
+  INDEX `fk_poll_poll_type1_idx` (`poll_type_id` ASC),
+  CONSTRAINT `fk_poll_visibility_type1`
+    FOREIGN KEY (`visibility_type_id`)
+    REFERENCES `goounj`.`visibility_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_poll_reward_type1`
+    FOREIGN KEY (`reward_type_id`)
+    REFERENCES `goounj`.`reward_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_poll_user1`
+    FOREIGN KEY (`created_user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_poll_poll_type1`
+    FOREIGN KEY (`poll_type_id`)
+    REFERENCES `goounj`.`poll_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `audience_poll_map`
---
 
-LOCK TABLES `audience_poll_map` WRITE;
-/*!40000 ALTER TABLE `audience_poll_map` DISABLE KEYS */;
-/*!40000 ALTER TABLE `audience_poll_map` ENABLE KEYS */;
-UNLOCK TABLES;
+-- -----------------------------------------------------
+-- Table `goounj`.`question_type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`question_type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
---
--- Table structure for table `auth_type`
---
 
-DROP TABLE IF EXISTS `auth_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `auth_type` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `auth_type`
---
-
-LOCK TABLES `auth_type` WRITE;
-/*!40000 ALTER TABLE `auth_type` DISABLE KEYS */;
-/*!40000 ALTER TABLE `auth_type` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `category`
---
-
-DROP TABLE IF EXISTS `category`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `category` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `category`
---
-
-LOCK TABLES `category` WRITE;
-/*!40000 ALTER TABLE `category` DISABLE KEYS */;
-/*!40000 ALTER TABLE `category` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `category_poll_map`
---
-
-DROP TABLE IF EXISTS `category_poll_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `category_poll_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `poll_id` int(11) NOT NULL,
-  `category_id` int(11) NOT NULL,
+-- -----------------------------------------------------
+-- Table `goounj`.`question`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`question` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `question` VARCHAR(255) NOT NULL,
+  `question_type_id` INT NOT NULL,
+  `poll_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_category_poll_map_poll1_idx` (`poll_id`),
-  KEY `fk_category_poll_map_category1_idx` (`category_id`),
-  CONSTRAINT `fk_category_poll_map_category1` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_category_poll_map_poll1` FOREIGN KEY (`poll_id`) REFERENCES `poll` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  INDEX `fk_question_question_type1_idx` (`question_type_id` ASC),
+  INDEX `fk_question_poll1_idx` (`poll_id` ASC),
+  CONSTRAINT `fk_question_question_type1`
+    FOREIGN KEY (`question_type_id`)
+    REFERENCES `goounj`.`question_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_question_poll1`
+    FOREIGN KEY (`poll_id`)
+    REFERENCES `goounj`.`poll` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `category_poll_map`
---
 
-LOCK TABLES `category_poll_map` WRITE;
-/*!40000 ALTER TABLE `category_poll_map` DISABLE KEYS */;
-/*!40000 ALTER TABLE `category_poll_map` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `category_user_map`
---
-
-DROP TABLE IF EXISTS `category_user_map`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `category_user_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `category_id` int(11) NOT NULL,
+-- -----------------------------------------------------
+-- Table `goounj`.`question_options`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`question_options` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `option` VARCHAR(255) NOT NULL,
+  `question_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_category_user_map_user1_idx` (`user_id`),
-  KEY `fk_category_user_map_category1_idx` (`category_id`),
-  CONSTRAINT `fk_category_user_map_category1` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_category_user_map_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  INDEX `fk_question_options_question1_idx` (`question_id` ASC),
+  CONSTRAINT `fk_question_options_question1`
+    FOREIGN KEY (`question_id`)
+    REFERENCES `goounj`.`question` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `category_user_map`
---
 
-LOCK TABLES `category_user_map` WRITE;
-/*!40000 ALTER TABLE `category_user_map` DISABLE KEYS */;
-/*!40000 ALTER TABLE `category_user_map` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `poll`
---
-
-DROP TABLE IF EXISTS `poll`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `poll` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `start_date` datetime NOT NULL,
-  `end_date` datetime NOT NULL,
-  `poll_name` varchar(45) NOT NULL,
-  `is_boost` tinyint(1) DEFAULT '0',
-  `visibility_type_id` int(11) NOT NULL,
-  `reward_type_id` int(11) NOT NULL,
-  `created_user_id` int(11) NOT NULL,
-  `poll_type_id` int(11) NOT NULL,
-  `is_active` tinyint(1) unsigned DEFAULT '1',
-  `is_generic` tinyint(1) unsigned DEFAULT '0',
+-- -----------------------------------------------------
+-- Table `goounj`.`audience_poll_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`audience_poll_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `poll_id` INT NOT NULL,
+  `is_skipped` TINYINT(1) NULL DEFAULT '0',
+  `poll_answered_time` DATETIME NULL,
+  `is_answered` TINYINT(1) NULL DEFAULT '0',
+  INDEX `fk_user_poll_map_user1_idx` (`user_id` ASC),
+  INDEX `fk_user_poll_map_poll1_idx` (`poll_id` ASC),
   PRIMARY KEY (`id`),
-  KEY `fk_poll_visibility_type1_idx` (`visibility_type_id`),
-  KEY `fk_poll_reward_type1_idx` (`reward_type_id`),
-  KEY `fk_poll_user1_idx` (`created_user_id`),
-  KEY `fk_poll_poll_type1_idx` (`poll_type_id`),
-  CONSTRAINT `fk_poll_poll_type1` FOREIGN KEY (`poll_type_id`) REFERENCES `poll_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_poll_reward_type1` FOREIGN KEY (`reward_type_id`) REFERENCES `reward_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_poll_user1` FOREIGN KEY (`created_user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_poll_visibility_type1` FOREIGN KEY (`visibility_type_id`) REFERENCES `visibility_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  CONSTRAINT `fk_user_poll_map_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_poll_map_poll1`
+    FOREIGN KEY (`poll_id`)
+    REFERENCES `goounj`.`poll` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `poll`
---
 
-LOCK TABLES `poll` WRITE;
-/*!40000 ALTER TABLE `poll` DISABLE KEYS */;
-/*!40000 ALTER TABLE `poll` ENABLE KEYS */;
-UNLOCK TABLES;
+-- -----------------------------------------------------
+-- Table `goounj`.`category`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`category` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
---
--- Table structure for table `poll_type`
---
 
-DROP TABLE IF EXISTS `poll_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `poll_type` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `poll_type`
---
-
-LOCK TABLES `poll_type` WRITE;
-/*!40000 ALTER TABLE `poll_type` DISABLE KEYS */;
-/*!40000 ALTER TABLE `poll_type` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `purchase`
---
-
-DROP TABLE IF EXISTS `purchase`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `purchase` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `subscription_id` int(11) NOT NULL,
-  `purchase_date` datetime NOT NULL,
+-- -----------------------------------------------------
+-- Table `goounj`.`category_user_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`category_user_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `category_id` INT NOT NULL,
+  INDEX `fk_category_user_map_user1_idx` (`user_id` ASC),
+  INDEX `fk_category_user_map_category1_idx` (`category_id` ASC),
   PRIMARY KEY (`id`),
-  KEY `fk_user_subscription_map_user1_idx` (`user_id`),
-  KEY `fk_user_subscription_map_subscription1_idx` (`subscription_id`),
-  CONSTRAINT `fk_user_subscription_map_subscription1` FOREIGN KEY (`subscription_id`) REFERENCES `subscription` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_subscription_map_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  CONSTRAINT `fk_category_user_map_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_category_user_map_category1`
+    FOREIGN KEY (`category_id`)
+    REFERENCES `goounj`.`category` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `purchase`
---
 
-LOCK TABLES `purchase` WRITE;
-/*!40000 ALTER TABLE `purchase` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `question`
---
-
-DROP TABLE IF EXISTS `question`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `question` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `question` varchar(255) NOT NULL,
-  `question_type_id` int(11) NOT NULL,
-  `poll_id` int(11) NOT NULL,
+-- -----------------------------------------------------
+-- Table `goounj`.`category_poll_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`category_poll_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `poll_id` INT NOT NULL,
+  `category_id` INT NOT NULL,
+  INDEX `fk_category_poll_map_poll1_idx` (`poll_id` ASC),
+  INDEX `fk_category_poll_map_category1_idx` (`category_id` ASC),
   PRIMARY KEY (`id`),
-  KEY `fk_question_question_type1_idx` (`question_type_id`),
-  KEY `fk_question_poll1_idx` (`poll_id`),
-  CONSTRAINT `fk_question_poll1` FOREIGN KEY (`poll_id`) REFERENCES `poll` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_question_question_type1` FOREIGN KEY (`question_type_id`) REFERENCES `question_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  CONSTRAINT `fk_category_poll_map_poll1`
+    FOREIGN KEY (`poll_id`)
+    REFERENCES `goounj`.`poll` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_category_poll_map_category1`
+    FOREIGN KEY (`category_id`)
+    REFERENCES `goounj`.`category` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `question`
---
 
-LOCK TABLES `question` WRITE;
-/*!40000 ALTER TABLE `question` DISABLE KEYS */;
-/*!40000 ALTER TABLE `question` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `question_options`
---
-
-DROP TABLE IF EXISTS `question_options`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `question_options` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `option` varchar(255) NOT NULL,
-  `question_id` int(11) NOT NULL,
+-- -----------------------------------------------------
+-- Table `goounj`.`answer`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`answer` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `time` DATETIME NOT NULL,
+  `question_id` INT NOT NULL,
+  `question_options_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_question_options_question1_idx` (`question_id`),
-  CONSTRAINT `fk_question_options_question1` FOREIGN KEY (`question_id`) REFERENCES `question` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  INDEX `fk_answer_question1_idx` (`question_id` ASC),
+  INDEX `fk_answer_question_options1_idx` (`question_options_id` ASC),
+  INDEX `fk_answer_user1_idx` (`user_id` ASC),
+  CONSTRAINT `fk_answer_question1`
+    FOREIGN KEY (`question_id`)
+    REFERENCES `goounj`.`question` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_answer_question_options1`
+    FOREIGN KEY (`question_options_id`)
+    REFERENCES `goounj`.`question_options` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_answer_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `question_options`
---
 
-LOCK TABLES `question_options` WRITE;
-/*!40000 ALTER TABLE `question_options` DISABLE KEYS */;
-/*!40000 ALTER TABLE `question_options` ENABLE KEYS */;
-UNLOCK TABLES;
+-- -----------------------------------------------------
+-- Table `goounj`.`subscription`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`subscription` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `plan_name` VARCHAR(45) NOT NULL,
+  `indian_pricing` INT NOT NULL,
+  `intl_pricing` INT NOT NULL,
+  `ideal_for` VARCHAR(45) NOT NULL,
+  `poll_count` VARCHAR(45) NOT NULL,
+  `responce_count` VARCHAR(45) NOT NULL,
+  `poll_database` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
---
--- Table structure for table `question_type`
---
 
-DROP TABLE IF EXISTS `question_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `question_type` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `question_type`
---
-
-LOCK TABLES `question_type` WRITE;
-/*!40000 ALTER TABLE `question_type` DISABLE KEYS */;
-/*!40000 ALTER TABLE `question_type` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `reward_type`
---
-
-DROP TABLE IF EXISTS `reward_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `reward_type` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) NOT NULL,
-  `points` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `reward_type`
---
-
-LOCK TABLES `reward_type` WRITE;
-/*!40000 ALTER TABLE `reward_type` DISABLE KEYS */;
-/*!40000 ALTER TABLE `reward_type` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `role`
---
-
-DROP TABLE IF EXISTS `role`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `role` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `role`
---
-
-LOCK TABLES `role` WRITE;
-/*!40000 ALTER TABLE `role` DISABLE KEYS */;
-/*!40000 ALTER TABLE `role` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `subscription`
---
-
-DROP TABLE IF EXISTS `subscription`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `subscription` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `plan_name` varchar(45) NOT NULL,
-  `indian_pricing` int(11) NOT NULL,
-  `intl_pricing` int(11) NOT NULL,
-  `ideal_for` varchar(45) NOT NULL,
-  `poll_count` varchar(45) NOT NULL,
-  `responce_count` varchar(45) NOT NULL,
-  `poll_database` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `subscription`
---
-
-LOCK TABLES `subscription` WRITE;
-/*!40000 ALTER TABLE `subscription` DISABLE KEYS */;
-/*!40000 ALTER TABLE `subscription` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `subscription_usage`
---
-
-DROP TABLE IF EXISTS `subscription_usage`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `subscription_usage` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `updated_date` datetime NOT NULL,
-  `poll_count` int(11) DEFAULT NULL,
-  `response_count` int(11) DEFAULT NULL,
-  `used_poll_count` int(11) DEFAULT NULL,
-  `used_response_count` int(11) DEFAULT NULL,
+-- -----------------------------------------------------
+-- Table `goounj`.`purchase`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`purchase` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `subscription_id` INT NOT NULL,
+  `purchase_date` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `fk_subscription_usage_user1_idx` (`user_id`),
-  CONSTRAINT `fk_subscription_usage_user1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  INDEX `fk_user_subscription_map_user1_idx` (`user_id` ASC),
+  INDEX `fk_user_subscription_map_subscription1_idx` (`subscription_id` ASC),
+  CONSTRAINT `fk_user_subscription_map_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_user_subscription_map_subscription1`
+    FOREIGN KEY (`subscription_id`)
+    REFERENCES `goounj`.`subscription` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `subscription_usage`
---
 
-LOCK TABLES `subscription_usage` WRITE;
-/*!40000 ALTER TABLE `subscription_usage` DISABLE KEYS */;
-/*!40000 ALTER TABLE `subscription_usage` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `user`
---
-
-DROP TABLE IF EXISTS `user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `first_name` varchar(45) DEFAULT NULL,
-  `last_name` varchar(45) DEFAULT NULL,
-  `email` varchar(45) DEFAULT NULL,
-  `phone` varchar(45) NOT NULL,
-  `password` varchar(120) DEFAULT NULL,
-  `public_key` varchar(120) DEFAULT NULL,
-  `secret_key` varchar(200) DEFAULT NULL,
-  `gender` varchar(45) DEFAULT NULL,
-  `dob` varchar(45) DEFAULT NULL,
-  `access_time` datetime DEFAULT NULL,
-  `created_time` datetime DEFAULT NULL,
-  `updated_time` datetime DEFAULT NULL,
-  `is_verified` tinyint(1) unsigned DEFAULT '1',
-  `auth_code` varchar(45) DEFAULT NULL,
-  `role_id` int(11) NOT NULL,
-  `auth_type_id` int(11) NOT NULL,
-  `country` varchar(45) DEFAULT NULL,
-  `city` varchar(45) DEFAULT NULL,
-  `country_code` int(11) DEFAULT NULL,
-  `device_id` varchar(120) DEFAULT NULL,
-  `device_token` varchar(200) DEFAULT NULL,
-  `os_type` varchar(45) DEFAULT NULL,
-  `os_version` varchar(45) DEFAULT NULL,
-  `is_active` tinyint(1) unsigned DEFAULT '1',
+-- -----------------------------------------------------
+-- Table `goounj`.`subscription_usage`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`subscription_usage` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `updated_date` DATETIME NOT NULL,
+  `poll_count` INT NULL,
+  `response_count` INT NULL,
+  `used_poll_count` INT NULL,
+  `used_response_count` INT NULL,
+  INDEX `fk_subscription_usage_user1_idx` (`user_id` ASC),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `phone_UNIQUE` (`phone`),
-  KEY `fk_user_role_idx` (`role_id`),
-  KEY `fk_user_auth_type1_idx` (`auth_type_id`),
-  CONSTRAINT `fk_user_auth_type1` FOREIGN KEY (`auth_type_id`) REFERENCES `auth_type` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_role` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  CONSTRAINT `fk_subscription_usage_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `user`
---
 
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
+-- -----------------------------------------------------
+-- Table `goounj`.`association`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`association` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NOT NULL,
+  `admin_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_association_user1_idx` (`admin_id` ASC),
+  CONSTRAINT `fk_association_user1`
+    FOREIGN KEY (`admin_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Table structure for table `visibility_type`
---
 
-DROP TABLE IF EXISTS `visibility_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `visibility_type` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- -----------------------------------------------------
+-- Table `goounj`.`association_user_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`association_user_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `association_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_association_user_map_user1_idx` (`user_id` ASC),
+  INDEX `fk_association_user_map_association1_idx` (`association_id` ASC),
+  CONSTRAINT `fk_association_user_map_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_association_user_map_association1`
+    FOREIGN KEY (`association_id`)
+    REFERENCES `goounj`.`association` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping data for table `visibility_type`
---
 
-LOCK TABLES `visibility_type` WRITE;
-/*!40000 ALTER TABLE `visibility_type` DISABLE KEYS */;
-/*!40000 ALTER TABLE `visibility_type` ENABLE KEYS */;
-UNLOCK TABLES;
+-- -----------------------------------------------------
+-- Table `goounj`.`election`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`election` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `created_date` DATETIME NULL,
+  `end_date` DATETIME NULL,
+  `nomination_end_date` DATETIME NULL,
+  `vigilance_user_id` INT NOT NULL,
+  `association_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_election_user1_idx` (`vigilance_user_id` ASC),
+  INDEX `fk_election_association1_idx` (`association_id` ASC),
+  CONSTRAINT `fk_election_user1`
+    FOREIGN KEY (`vigilance_user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_election_association1`
+    FOREIGN KEY (`association_id`)
+    REFERENCES `goounj`.`association` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
---
--- Dumping routines for database 'goounj'
---
-/*!50003 DROP PROCEDURE IF EXISTS `deletePoll` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `deletePoll`(IN pollId int(45))
-    DETERMINISTIC
-    COMMENT 'Procedure to delete a poll'
-BEGIN
-DECLARE questionId int;
-SET questionId := (SELECT id FROM question WHERE poll_id = pollId LIMIT 1);
-WHILE (questionId IS NOT NULL) DO
-    DELETE FROM answer WHERE question_id = questionId;
-	DELETE FROM question_options WHERE question_id = questionId;
-DELETE FROM question 
-WHERE
-    id = questionId;
-    SET questionId := (SELECT id FROM question WHERE poll_id = pollId LIMIT 1);
-END WHILE;
-DELETE FROM audience_poll_map 
-WHERE
-    poll_id = pollId;
-DELETE FROM category_poll_map 
-WHERE
-    poll_id = pollId;
-DELETE FROM poll 
-WHERE
-    id = pollId;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `deleteUser` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `deleteUser`(IN userId INT(45))
-    DETERMINISTIC
-    COMMENT 'Procedure to delete an user'
-BEGIN
-DECLARE pollId int;
-SET pollId := (SELECT id FROM poll WHERE created_user_id = userId LIMIT 1);
-WHILE (pollId IS NOT NULL) DO
-	CALL deletePoll(pollId);
-    SET pollId := (SELECT id FROM poll WHERE created_user_id = userId LIMIT 1);
-END WHILE;
-IF pollId IS NULL THEN
-		DELETE FROM user WHERE id = userId;
-    END IF;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `setAudienceForPoll` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `setAudienceForPoll`(IN phoneNumber VARCHAR(45), IN pollId VARCHAR(45))
-    DETERMINISTIC
-    COMMENT 'Procedure to assign audience to a poll'
-BEGIN
-DECLARE userId int;
-SET userId := (SELECT id FROM user WHERE phone = phoneNumber LIMIT 1);
-IF userId IS NULL THEN
-    INSERT IGNORE INTO user (phone, role_id, auth_type_id) VALUES (phoneNumber, '1', '1');
-    SET userId := LAST_INSERT_ID(); -- LAST_INSERT_ID() can give you the real, surrogate key
-END IF;
-INSERT INTO audience_poll_map (user_id, poll_id) VALUES (userId, pollId);
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `setAudienceForSurvey` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `setAudienceForSurvey`(IN phoneNumber VARCHAR(45), IN pollId VARCHAR(45), IN utcTimeStamp DATETIME, IN fname VARCHAR(45), IN lname VARCHAR(45), OUT userId INT(11))
-    DETERMINISTIC
-    COMMENT 'Procedure to assign audience to a survey'
-BEGIN
-SET userId := (SELECT id FROM user WHERE phone = phoneNumber LIMIT 1);
-IF userId IS NULL THEN
-    INSERT IGNORE INTO user (phone, role_id, auth_type_id) VALUES (phoneNumber, '1', '1');
-    SET userId := LAST_INSERT_ID(); -- LAST_INSERT_ID() can give you the real, surrogate key
-END IF;
-UPDATE user SET first_name = fname, last_name = lname WHERE id = userId;
-INSERT INTO audience_poll_map (user_id, poll_id, poll_answered_time, is_answered) VALUES (userId, pollId, utcTimeStamp, 1);
 
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `updateAuthCode` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8 */ ;
-/*!50003 SET character_set_results = utf8 */ ;
-/*!50003 SET collation_connection  = utf8_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`root`@`localhost` PROCEDURE `updateAuthCode`(IN authCode VARCHAR(45), IN phoneNumber VARCHAR(45), IN userVerified TINYINT(1), OUT publicKey VARCHAR(120), OUT secretKey VARCHAR(200), OUT userId VARCHAR(45))
-    DETERMINISTIC
-    COMMENT 'Procedure to create a new user'
-BEGIN
-UPDATE user SET auth_code = authCode, is_verified = userVerified WHERE phone = phoneNumber;
-SELECT secret_key, public_key, id
-INTO secretKey, publicKey, userId
-FROM user
-WHERE phone = phoneNumber;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- -----------------------------------------------------
+-- Table `goounj`.`election_vigilance_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`election_vigilance_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-12-30  2:21:32
+-- -----------------------------------------------------
+-- Table `goounj`.`candidate`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`candidate` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `election_id` INT NOT NULL,
+  `is_accepted` TINYINT(1) NULL DEFAULT 0,
+  `name` VARCHAR(45) NULL,
+  `nick_name` VARCHAR(45) NULL,
+  `about` VARCHAR(150) NULL,
+  `manifesto` VARCHAR(150) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_nominee_user1_idx` (`user_id` ASC),
+  INDEX `fk_nominee_election1_idx` (`election_id` ASC),
+  CONSTRAINT `fk_nominee_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_nominee_election1`
+    FOREIGN KEY (`election_id`)
+    REFERENCES `goounj`.`election` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`vote`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`vote` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `time` DATETIME NULL,
+  `nominee_id` INT NOT NULL,
+  `voter_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_vote_nominee1_idx` (`nominee_id` ASC),
+  INDEX `fk_vote_user1_idx` (`voter_id` ASC),
+  CONSTRAINT `fk_vote_nominee1`
+    FOREIGN KEY (`nominee_id`)
+    REFERENCES `goounj`.`candidate` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vote_user1`
+    FOREIGN KEY (`voter_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
