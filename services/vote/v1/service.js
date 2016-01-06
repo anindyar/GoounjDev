@@ -39,7 +39,7 @@ module.exports = {
             auth: 'bypass'
         },{
             name: 'nomination',
-            methods: require('./nomination'),
+            methods: require('./candidate'),
             auth: 'bypass'
         }, {
             name: 'vote',

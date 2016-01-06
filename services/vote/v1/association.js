@@ -28,14 +28,12 @@
  *************************************************************************/
 
 var config = require('./../../../config');
-var sms = require('./../../../sms');
 var log = require('./../../../log');
-var moment = require('moment');
 
 exports.create = function(request, response) {
   var json;
     try {
-        if(request.body.associationName != null) {
+        if(request.body.associationName != null && request.body.associationAdminId != null) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error. (Function: Association.create)");
@@ -63,7 +61,7 @@ exports.create = function(request, response) {
 
                     }
                     else {
-                        connection.query('INSERT INTO '+ config.mysql.db.name +'.association (name) VALUES (?)', request.body.associationName, function(queryError, entry) {
+                        connection.query('INSERT INTO '+ config.mysql.db.name +'.association (name, admin_id) VALUES (?, ?)', [request.body.associationName, request.body.associationAdminId], function(queryError, entry) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. (Function: Association.create)");
                                 json  = {
@@ -72,7 +70,7 @@ exports.create = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             else{
-                                associationID = result.insertId;
+                                associationID = entry.insertId;
                                 json = {
                                     AssociationID: associationID
                                 };
@@ -98,7 +96,7 @@ exports.create = function(request, response) {
 exports.update = function(request, response) {
     var json;
     try {
-        if(request.params.id != null && request.body.association != null) {
+        if(request.params.id != null && request.body.associationName != null) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Association.Update");
@@ -107,7 +105,7 @@ exports.update = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association WHERE name = ?', [request.body.association], function(queryError, item) {
+                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association WHERE name = ?', [request.body.associationName], function(queryError, item) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to create a new association. Association Details: " + JSON.stringify(request.body.association) + "(Function = Association.Update)");
                         json = {
@@ -141,37 +139,50 @@ exports.update = function(request, response) {
                                 return response.status(404).json(json);
                             }
                             else {
-                                if(request.body.association != null){
-                                    connection.query('UPDATE '+ config.mysql.db.name + '.association SET name = ? WHERE id = ?', [request.body.association, request.params.id], function(queryError, none){
-                                        if (queryError != null) {
-                                            log.error(queryError, "Query error. Failed to update association. Association ID: " + JSON.stringify(request.params.id) + "(Function = Association.Update)");
-                                            json = {
-                                                error: "Requested action failed. Database could not be reached."
-                                            };
-                                            return response.status(500).json(json);
-                                        }
-                                        else {
-                                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.association WHERE id = ?', request.params.id, function(queryError, result) {
-                                                if (queryError != null) {
-                                                    log.error(queryError, "Query Error. Failed To Update Association. Association ID: " + request.params.id + " (Function = Association.Update)");
-                                                    json = {
-                                                        error: "Requested Action Failed. Database could not be reached."
-                                                    };
-                                                    return response.status(500).json(json);
-                                                } else {
-                                                    log.info({Function: "Association.Update"}, "Association Updated Successfully. Association ID: " + request.params.id);
-                                                    return response.status(200).json(result[0]);
-                                                }
-                                            });
-                                        }
-                                    });
+                                var jsonData = {};
+                                if(request.body.associationName != null) {
+                                    jsonData['name'] = request.body.associationName;
                                 }
+                                if(request.body.associationAdminId != null) {
+                                    jsonData['admin_id'] = request.body.associationAdminId;
+                                }
+
+                                connection.query('UPDATE '+ config.mysql.db.name + '.association SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, none){
+                                    if (queryError != null) {
+                                        log.error(queryError, "Query error. Failed to update association. Association ID: " + JSON.stringify(request.params.id) + "(Function = Association.Update)");
+                                        json = {
+                                            error: "Requested action failed. Database could not be reached."
+                                        };
+                                        return response.status(500).json(json);
+                                    }
+                                    else {
+                                        connection.query('SELECT * FROM '+ config.mysql.db.name +'.association WHERE id = ?', request.params.id, function(queryError, result) {
+                                            if (queryError != null) {
+                                                log.error(queryError, "Query Error. Failed To Update Association. Association ID: " + request.params.id + " (Function = Association.Update)");
+                                                json = {
+                                                    error: "Requested Action Failed. Database could not be reached."
+                                                };
+                                                return response.status(500).json(json);
+                                            } else {
+                                                log.info({Function: "Association.Update"}, "Association Updated Successfully. Association ID: " + request.params.id);
+                                                return response.status(200).json(result[0]);
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         });
                     }
                 });
 
             });
+        }
+        else {
+            json = {
+                error: "New Association Name/Admin Id and Id are required."
+            };
+            log.info({Function: "Association.Update"}, "Association Update Failed.");
+            return response.status(500).json(json);
         }
     }
     catch (error) {
@@ -196,7 +207,7 @@ exports.index = function(request, response) {
                 return response.status(500).json(json);
             }
             else {
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association', function(queryError, result) {
+                connection.query('SELECT name, is_active FROM '+ config.mysql.db.name +'.association', function(queryError, result) {
                     if (queryError != null) {
                         log.error(queryError, "Query Error. Failed to fetch association details. (Function = Association.Index)");
                         json = {
@@ -225,6 +236,21 @@ exports.index = function(request, response) {
     }
 };
 
+exports.show = function(request, response) {
+    var json;
+    try {
+        request.getConnection(function(connectionError, connection) {
+            if (connectionError != null) {
+                log.error(connectionError, "Database Connection Error (Function = Association.Show)");
+                json = {
+                    error: "Association Delete failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            connection.query('SELECT ');
+        });
+    }
+};
 
 exports["delete"] = function(request, response) {
     var json;
@@ -238,7 +264,7 @@ exports["delete"] = function(request, response) {
                 return response.status(500).json(json);
             }
 
-            connection.query('DELETE FROM ' + config.mysql.db.name + '.association WHERE id = ?', request.params.id, function (queryError, result) {
+            connection.query('UPDATE '+ config.mysql.db.name + '.association SET is_active = ? WHERE id = ?', ["0", request.params.id], function (queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Delete an Association. Association ID: " + request.params.id + " (Function = Association.Delete)");
                     json = {
