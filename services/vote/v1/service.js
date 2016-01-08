@@ -38,12 +38,28 @@ module.exports = {
             methods: require('./election'),
             auth: 'bypass'
         },{
-            name: 'nomination',
+            name: 'candidate',
             methods: require('./candidate'),
             auth: 'bypass'
         }, {
             name: 'vote',
             methods: require('./vote'),
+            auth: 'bypass'
+        }, {
+            name: 'otp',
+            methods: require('./otp'),
+            auth: 'bypass'
+        }, {
+            name: 'associationList',
+            methods: require('./associationList'),
+            auth: 'bypass'
+        }, {
+            name: 'invite',
+            methods: require('./invite'),
+            auth: 'bypass'
+        }, {
+            name: 'electionList',
+            methods: require('./electionList'),
             auth: 'bypass'
         }
     ]

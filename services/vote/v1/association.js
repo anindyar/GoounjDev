@@ -231,10 +231,11 @@ exports.index = function(request, response) {
         json = {
             error: "Error: " + error.message
         };
-        log.error(error, "Exception Occurred (Function = Association: Update)");
+        log.error(error, "Exception Occurred (Function = Association.Update)");
         return response.status(500).json(json);
     }
 };
+
 
 exports.show = function(request, response) {
     var json;
@@ -247,10 +248,34 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT ');
+            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdmin,  association_user_map.user_id AS members FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ?', request.params.id, function(queryError, result) {
+                if (queryError != null) {
+                    log.error(queryError, "Query Error. Failed To Show an Association. Association ID: " + request.params.id + " (Function = Association.Show)");
+                    json = {
+                        error: "Requested Action Failed. Database could not be reached."
+                    };
+                    return response.status(500).json(json);
+                }
+                else if(result) {
+                    log.info({Function: "Association.Show"}, "Fetched Association Details. AssociationID" + request.params.id);
+                    return response.status(200).json(result[0]);
+                }
+                else {
+                    log.info({Function: "Association.Show"}, "Requested Association not found. AssociationID" + request.params.id);
+                    return response.sendStatus(404);
+                }
+            });
         });
     }
+    catch (error) {
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception Occurred (Function = Association.Show)");
+        return response.status(500).json(json);
+    }
 };
+
 
 exports["delete"] = function(request, response) {
     var json;
@@ -271,7 +296,8 @@ exports["delete"] = function(request, response) {
                         error: "Requested Action Failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
-                } else {
+                }
+                else {
                     if (result.affectedRows != 0) {
                         log.info({Function: "Association.Delete"}, "Association Deleted Successfully. id: " + request.params.id);
                         return response.sendStatus(200);

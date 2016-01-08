@@ -557,7 +557,7 @@ exports.update = function(request, response) {
                         var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
                         jsonData['updated_time'] = utcTimeStamp;
 
-                        connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? Where id = ?', [jsonData,request.params.id], function(queryError, result) {
+                        connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? WHERE id = ?', [jsonData,request.params.id], function(queryError, result) {
                             if (queryError != null) {
                                 log.error(queryError, "Query Error. Failed To Update User Details. User ID: " + request.params.id + " (Function = User.Update)");
                                 json = {
