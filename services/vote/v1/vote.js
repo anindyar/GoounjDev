@@ -72,7 +72,7 @@ exports.create = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             else if(entry){
-                                connection.query('INSERT INTO '+ config.mysql.db.name +'.election_voter_map (user_id, election_id, is_voted, voted_time) VALUES (?, ?, ?, ?)', [request.body.userId, request.body.electionId, "1", utcTimeStamp], function(queryError, item) {
+                                connection.query('UPDATE '+ config.mysql.db.name +'.election_user_map SET is_voted = ? AND voted_time = ?', ["1", utcTimeStamp], function(queryError, item) {
                                     if(queryError != null) {
                                         log.error(queryError, "Query error. Failed to update election_voter_map.(Function = Vote.Create)");
                                         json = {

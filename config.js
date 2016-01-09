@@ -97,6 +97,9 @@ config = {
     },
     poll: {
         expiresAfter: 28
+    },
+    vote: {
+        allowChange: 2
     }
 };
 
