@@ -125,7 +125,7 @@ exports.create = function(request, response) {
         if((request.body.userId !== null) && (request.body.limit != null)) {
             request.getConnection(function (connectionError, connection) {
                 if (connectionError != null) {
-                    log.error(connectionError, "Database Connection Error (Function = Poll.Create)");
+                    log.error(connectionError, "Database Connection Error (Function = PollList.Create)");
                     json = {
                         error: "PollList.Create failed. Database could not be reached."
                     };

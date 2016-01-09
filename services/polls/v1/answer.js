@@ -91,10 +91,10 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.questionList !== null) && (request.body.userId != null) && (request.body.pollId != null)) {
+        if((request.body.questionList !== null) && (request.body.questionList.optionId != null) && (request.body.questionList.questionId != null) && (request.body.userId != null) && (request.body.pollId != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
-                    log.error(connectionError, "Database Connection Error (Function = Poll.Answer)");
+                    log.error(connectionError, "Database Connection Error (Function = Answer.create)");
                     json = {
                         error: "Poll Delete failed. Database could not be reached."
                     };
@@ -104,7 +104,7 @@ exports.create = function(request, response) {
                 var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
                 connection.query('SELECT is_generic FROM ' + config.mysql.db.name + '.poll WHERE id = ?', request.body.pollId, function(queryError, item) {
                     if(queryError != null) {
-                        log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                        log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                         json = {
                             error: "Requested action failed. Database could not be reached."
                         };
@@ -113,7 +113,7 @@ exports.create = function(request, response) {
                     else if(item[0].is_generic == 1) {
                         connection.query('INSERT INTO '+ config.mysql.db.name + '.audience_poll_map (user_id, poll_id, poll_answered_time, is_answered) VALUES (?, ?, ?, ?)', [request.body.userId, request.body.pollId, utcTimeStamp, "1"], function(queryError, check) {
                             if (queryError != null) {
-                                log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                 json = {
                                     error: "Requested action failed. Database could not be reached."
                                 };
@@ -124,7 +124,7 @@ exports.create = function(request, response) {
                                     if((questionAnswer[i].questionId != null) && (questionAnswer[i].optionId != null)) {
                                         connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, ?, ?, ?)', [utcTimeStamp, questionAnswer[i].questionId, questionAnswer[i].optionId, request.body.userId], function (queryError, result) {
                                             if (queryError != null) {
-                                                log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                                log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                                 json = {
                                                     error: "Requested action failed. Database could not be reached."
                                                 };
@@ -136,7 +136,7 @@ exports.create = function(request, response) {
                                         });
                                     }
                                     else {
-                                        log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                        log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                         json = {
                                             error: "Question and option should not be null."
                                         };
@@ -152,7 +152,7 @@ exports.create = function(request, response) {
                     else if(item[0].is_generic == 0) {
                         connection.query('SELECT user_id FROM audience_poll_map WHERE poll_id = ? AND user_id = ?', [request.body.pollId, request.body.userId], function(queryError, check) {
                             if (queryError != null) {
-                                log.error(queryError, "Query error. Failed to select audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                log.error(queryError, "Query error. Failed to select audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                 json = {
                                     error: "Requested action failed. Database could not be reached."
                                 };
@@ -161,7 +161,7 @@ exports.create = function(request, response) {
                             else if(check[0]) {
                                 connection.query('UPDATE '+ config.mysql.db.name + '.audience_poll_map SET poll_answered_time = ?, is_answered = 1 WHERE poll_id = ? AND user_id = ?', [utcTimeStamp, request.body.pollId, request.body.userId], function(queryError, action) {
                                     if (queryError != null) {
-                                        log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                        log.error(queryError, "Query error. Failed to update audience. Answer details " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                         json = {
                                             error: "Requested action failed. Database could not be reached."
                                         };
@@ -172,7 +172,7 @@ exports.create = function(request, response) {
                                             if((questionAnswer[i].questionId != null) && (questionAnswer[i].optionId != null)) {
                                                 connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, ?, ?, ?)', [utcTimeStamp, questionAnswer[i].questionId, questionAnswer[i].optionId, request.body.userId], function (queryError, result) {
                                                     if (queryError != null) {
-                                                        log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                                        log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                                         json = {
                                                             error: "Requested action failed. Database could not be reached."
                                                         };
@@ -184,7 +184,7 @@ exports.create = function(request, response) {
                                                 });
                                             }
                                             else {
-                                                log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Poll.Answer)");
+                                                log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                                 json = {
                                                     error: "Question and option should not be null."
                                                 };
@@ -196,17 +196,24 @@ exports.create = function(request, response) {
                                 });
                             }
                             else {
-                                log.info({Function: "Poll.Answer"}, "PollID and UserID doesn't match.");
+                                log.info({Function: "Answer.create"}, "PollID and UserID doesn't match.");
                                 return response.sendStatus(404);
                             }
                         });
                     }
                     else {
-                        log.info({Function: "Poll.Answer"}, "Requested poll not found.");
+                        log.info({Function: "Answer.create"}, "Requested poll not found.");
                         return response.sendStatus(404);
                     }
                 });
             });
+        }
+        else {
+            json = {
+                error: "Parameters should not be empty!"
+            };
+            log.info({Function: "Answer.create"}, "Parameters are empty.");
+            return response.status(500).json(json);
         }
     }
     catch(error) {
