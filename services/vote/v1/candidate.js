@@ -51,15 +51,15 @@ exports.create = function(request, response) {
                         };
                         return response.status(500).json(json);
                     }
-                    if(candidates) {
-                        if(candidates[0].is_accepted == 1) {
+                    if(candidates.length != 0) {
+                        if(candidates.is_accepted == 1) {
                             json = {
                                 message: "This user is already a candidate."
                             };
                             log.info({Function: "Candidate.Create"}, "User is already a candidate.");
                             return response.status(501).json(json);
                         }
-                        else if(candidates[0].is_accepted == 0) {
+                        else if(candidates.is_accepted == 0) {
                             json = {
                                 message: "This user is already a nominated and is being scrutinized."
                             };
@@ -67,7 +67,7 @@ exports.create = function(request, response) {
                             return response.status(501).json(json);
                         }
                     }
-                    else if(!candidates) {
+                    else if(candidates.length == 0) {
                         connection.query('INSERT INTO '+ config.mysql.db.name +'.candidate (user_id, election_id, name, nick_name, about, manifesto) VALUES (?, ?, ?, ?, ?, ?)', [request.body.userId, request.body.electionId, request.body.userName, request.body.nickName, request.body.about, request.body.manifesto], function(queryError, entry) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. (Function: Candidate.Create)");
@@ -211,9 +211,13 @@ exports.show = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                else if(nominee) {
+                else if(nominee[0]) {
                     log.info({Function: "Candidate.Show"}, "Fetched Candidate Details.");
                     return response.status(200).json(nominee[0]);
+                }
+                else{
+                    log.info({Function: "Candidate.Show"}, "Candidate not found.");
+                    return response.sendStatus(404);
                 }
             });
         });
@@ -247,9 +251,13 @@ exports["delete"] = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                else if(nominee) {
-                    log.info({Function: "Candidate.Show"}, "Fetched Candidate Details.");
-                    return response.status(200).json(nominee[0]);
+                else if(nominee.affectedRows != 0) {
+                    log.info({Function: "Candidate.Show"}, "Candidate Deleted.");
+                    return response.sendStatus(200);
+                }
+                else {
+                    log.info({Function: "Candidate.Show"}, "Candidate Not Found.");
+                    return response.sendStatus(404);
                 }
             });
         });
@@ -259,6 +267,49 @@ exports["delete"] = function(request, response) {
             error: "Error: " + error.message
         };
         log.error(error, "Exception occured. (Function: Candidate.Delete)");
+        return response.status(500).json(json);
+    }
+};
+
+
+exports.index = function(request, response) {
+    var json;
+    try {
+        request.getConnection(function(connectionError, connection) {
+            if (connectionError != null) {
+                log.error(connectionError, "Database connection error (Function = Candidate.Index");
+                json = {
+                    error: "Candidate listing failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            connection.query('SELECT name AS candidateName, nick_name AS nickName, about, manifesto FROM '+ config.mysql.db.name +'.candidate WHERE election_id = ?', request.body.electionId, function(queryError, result) {
+                if(queryError != null) {
+                    log.error(queryError, "Query error. (Function: Candidate.Index)");
+                    json  = {
+                        error: "Query error. Failed to list candidates."
+                    };
+                    return response.status(500).json(json);
+                }
+                else {
+                    json = {
+                        candidateName: result.candidateName,
+                        nickName: result.nickName,
+                        about: result.about,
+                        manifesto: result.manifesto,
+                        candidateCount: result.length
+                    };
+                    log.info({Function: "Candidate.Index"}, "Fetched Candidate List.");
+                    return response.status(200).json(json);
+                }
+            });
+        });
+    }
+    catch(error){
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception occured. (Function: Candidate.Index)");
         return response.status(500).json(json);
     }
 };

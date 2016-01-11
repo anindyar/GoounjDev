@@ -142,7 +142,6 @@ exports.create = function(request, response) {
                         return response.status(500).json(json);
                     }
                     else if(result) {
-
                         log.info({Function: "PollList.Create"}, "Fetched Poll List.");
                         return response.status(200).json(result);
                     }

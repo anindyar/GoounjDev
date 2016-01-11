@@ -71,6 +71,15 @@ exports.create = function(request, response) {
                             }
                             else{
                                 associationID = entry.insertId;
+                                connection.query('INSERT INTO '+ config.mysql.db.name +'.association_user_map (association_id, user_id) VALUES (?, ?)', [associationID, request.body.associationAdminId], function(queryError, entry) {
+                                    if (queryError != null) {
+                                        log.error(queryError, "Query error. (Function: Association.create)");
+                                        json = {
+                                            error: "Query error. Failed to create new association."
+                                        };
+                                        return response.status(500).json(json);
+                                    }
+                                });
                                 json = {
                                     AssociationID: associationID
                                 };
@@ -248,7 +257,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdmin,  association_user_map.user_id AS members FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ?', request.params.id, function(queryError, result) {
+            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdmin,  association_user_map.user_id AS members FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ? AND is_active = ?', [request.params.id, "1"], function(queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Show an Association. Association ID: " + request.params.id + " (Function = Association.Show)");
                     json = {
@@ -256,12 +265,12 @@ exports.show = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                else if(result) {
-                    log.info({Function: "Association.Show"}, "Fetched Association Details. AssociationID" + request.params.id);
+                else if(result[0]) {
+                    log.info({Function: "Association.Show"}, "Fetched Association Details. Association ID: " + request.params.id);
                     return response.status(200).json(result[0]);
                 }
                 else {
-                    log.info({Function: "Association.Show"}, "Requested Association not found. AssociationID" + request.params.id);
+                    log.info({Function: "Association.Show"}, "Requested Association not found. Association ID: " + request.params.id);
                     return response.sendStatus(404);
                 }
             });

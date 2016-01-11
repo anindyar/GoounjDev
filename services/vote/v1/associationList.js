@@ -45,7 +45,7 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
 
-                connection.query('(SELECT association.id AS associationID, association.name AS associationName, (SELECT concat(first_name," ",last_name)) AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND user_id = ? LIMIT ?', [ "1", request.body.userId, request.body.limit], function(queryError, result) {
+                connection.query('SELECT association.id AS associationID, association.name AS associationName, (SELECT concat(first_name," ",last_name)) AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND user_id = ? LIMIT ?', ["1", request.body.userId, request.body.limit], function(queryError, result) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
                         json = {

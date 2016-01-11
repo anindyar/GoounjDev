@@ -63,7 +63,7 @@ exports.create = function(request, response) {
                     else {
                         var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
 
-                        connection.query('INSERT INTO '+ config.mysql.db.name +'.vote (user_id, candidate_id, election_id) VALUES (?, ?, ?)', [request.body.userId, request.body.candidateId, request.body.electionId, utcTimeStamp, authCode], function(queryError, entry) {
+                        connection.query('INSERT INTO '+ config.mysql.db.name +'.vote (user_id, candidate_id, election_id) VALUES (?, ?, ?)', [request.body.userId, request.body.candidateId, request.body.electionId], function(queryError, entry) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. Failed to record vote. ElectionID: " + JSON.stringify(request.body.electionId) + " & CandidateID: " + JSON.stringify(request.body.candidateId) + "(Function = Vote.Create)");
                                 json = {

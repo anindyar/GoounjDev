@@ -35,7 +35,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) && (request.body.createdDate != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserId != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null)) {
+        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserFirstName != null) && (request.body.vigilanceUserLastName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.adminUserId != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Create)");
@@ -46,7 +46,12 @@ exports.create = function(request, response) {
                 }
 
                 var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
-                connection.query('INSERT INTO '+ config.mysql.db.name +'.election (name, created_date, start_date, end_date, nomination_end_date, vigilance_user_id, association_id) VALUES (?, ?, ?, ?, ?, ?, ?)', [request.body.electionName, utcTimeStamp, request.body.startDate, request.body.endDate, request.body.nominationEndDate, request.body.vigilanceUserId, request.body.associaionId], function(queryError, entry) {
+
+                var startDate =  moment(request.body.startDate).format('YYYY/MM/DD HH:mm:ss');
+                var endDate =  moment(request.body.endDate).format('YYYY/MM/DD HH:mm:ss');
+                var nominationEndDate =  moment(request.body.nominationEndDate).format('YYYY/MM/DD HH:mm:ss');
+
+                connection.query('INSERT INTO '+ config.mysql.db.name +'.election (name, created_date, start_date, end_date, nomination_end_date, vigilance_user_id, association_id) VALUES (?, ?, ?, ?, ?, (SELECT id FROM user WHERE first_name = ? AND last_name = ?), ?)', [request.body.electionName, utcTimeStamp, startDate, endDate, nominationEndDate, request.body.vigilanceUserFirstName, request.body.vigilanceUserLastName, request.body.associationId], function(queryError, entry) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
                         json = {
@@ -56,7 +61,7 @@ exports.create = function(request, response) {
                     }
                     else if(entry) {
                         var electionID = entry.insertId;
-                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, ?)', [electionID, request.body.associaionId, request.body.userId], function(queryError, mapping) {
+                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, ?)', [electionID, request.body.associationId, request.body.adminUserId], function(queryError, mapping) {
                             if (queryError != null) {
                                 log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
                                 json = {
@@ -97,7 +102,7 @@ exports.create = function(request, response) {
 exports.update = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilenceUserId != null) || (request.body.nominationEndDate != null)) {
+        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilenceUserFirstName != null) || (request.body.vigilenceUserLastName != null) || (request.body.nominationEndDate != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Update)");
@@ -116,23 +121,28 @@ exports.update = function(request, response) {
                         return response.status(500).json(json);
                     }
                     if(check) {
-                        var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
+
+                        var dat = moment('Jan 10 2016').format('YYYY/MM/DD HH:mm:ss');
+                        console.log(dat);
 
                         var jsonData = {};
                         if(request.body.electionName != null) {
                             jsonData['name'] = request.body.electionName;
                         }
                         if(request.body.startDate != null) {
-                            jsonData['start_date'] = request.body.startDate;
+                            jsonData['start_date'] = moment(request.body.startDate).format('YYYY/MM/DD HH:mm:ss');
                         }
                         if(request.body.endDate != null) {
-                            jsonData['end_date'] = request.body.endDate;
+                            jsonData['end_date'] = moment(request.endDate).format('YYYY/MM/DD HH:mm:ss');;
                         }
-                        if(request.body.vigilanceUserId != null) {
-                            jsonData['vigilance_user_id'] = request.body.vigilanceUserId;
+                        if(request.body.vigilanceUserFirstName != null) {
+                            jsonData['vigilance_user_id'] = request.body.vigilanceUserFirstName;
+                        }
+                        if(request.body.vigilanceUserLastName != null) {
+                            jsonData['vigilance_user_id'] = request.body.vigilanceUserLastName;
                         }
                         if(request.body.nominationEndDate != null) {
-                            jsonData['nomination_end_date'] = request.body.nominationEndDate;
+                            jsonData['nomination_end_date'] = moment(request.body.nominationEndDate).format('YYYY/MM/DD HH:mm:ss');;
                         }
 
                         connection.query('UPDATE '+ config.mysql.db.name +'.election SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, item) {
