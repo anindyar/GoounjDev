@@ -43,7 +43,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT is_accepted FROM '+ config.mysql.db.name +'.candidate  WHERE user_id = ?', request.body.userId, function(queryError, candidates) {
+                connection.query('SELECT is_accepted FROM '+ config.mysql.db.name +'.candidate  WHERE user_id = ? AND election_id = ?', [request.body.userId, request.body.electionId], function(queryError, candidates) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Candidate.Create)");
                         json  = {
@@ -52,16 +52,16 @@ exports.create = function(request, response) {
                         return response.status(500).json(json);
                     }
                     if(candidates.length != 0) {
-                        if(candidates.is_accepted == 1) {
+                        if(candidates[0].is_accepted == 1) {
                             json = {
                                 message: "This user is already a candidate."
                             };
                             log.info({Function: "Candidate.Create"}, "User is already a candidate.");
                             return response.status(501).json(json);
                         }
-                        else if(candidates.is_accepted == 0) {
+                        else if(candidates[0].is_accepted == 0) {
                             json = {
-                                message: "This user is already a nominated and is being scrutinized."
+                                message: "This user has already filed a nomination and is being scrutinized."
                             };
                             log.info({Function: "Candidate.Create"}, "User under scrutiny.");
                             return response.status(501).json(json);
@@ -271,45 +271,3 @@ exports["delete"] = function(request, response) {
     }
 };
 
-
-exports.index = function(request, response) {
-    var json;
-    try {
-        request.getConnection(function(connectionError, connection) {
-            if (connectionError != null) {
-                log.error(connectionError, "Database connection error (Function = Candidate.Index");
-                json = {
-                    error: "Candidate listing failed. Database could not be reached."
-                };
-                return response.status(500).json(json);
-            }
-            connection.query('SELECT name AS candidateName, nick_name AS nickName, about, manifesto FROM '+ config.mysql.db.name +'.candidate WHERE election_id = ?', request.body.electionId, function(queryError, result) {
-                if(queryError != null) {
-                    log.error(queryError, "Query error. (Function: Candidate.Index)");
-                    json  = {
-                        error: "Query error. Failed to list candidates."
-                    };
-                    return response.status(500).json(json);
-                }
-                else {
-                    json = {
-                        candidateName: result.candidateName,
-                        nickName: result.nickName,
-                        about: result.about,
-                        manifesto: result.manifesto,
-                        candidateCount: result.length
-                    };
-                    log.info({Function: "Candidate.Index"}, "Fetched Candidate List.");
-                    return response.status(200).json(json);
-                }
-            });
-        });
-    }
-    catch(error){
-        json = {
-            error: "Error: " + error.message
-        };
-        log.error(error, "Exception occured. (Function: Candidate.Index)");
-        return response.status(500).json(json);
-    }
-};

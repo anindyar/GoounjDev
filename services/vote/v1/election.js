@@ -35,7 +35,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserFirstName != null) && (request.body.vigilanceUserLastName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.adminUserId != null)) {
+        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserFirstName != null) && (request.body.vigilanceUserLastName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.adminUserId != null) && (request.body.members != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Create)");
@@ -70,6 +70,18 @@ exports.create = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             if(mapping) {
+                                var memberList = request.body.members;
+                                for(i = 0; i < memberList.length; i++){
+                                    connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, (SELECT id FROM '+ config.mysql.db.name +'.user WHERE first_name = ? AND last_name = ?))', [electionID, request.body.associationId, memberList[i].firstName, memberList[i].lastName], function(queryError, check) {
+                                        if (queryError != null) {
+                                            log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
+                                            json = {
+                                                error: "Requested action failed. Database could not be reached."
+                                            };
+                                            return response.status(500).json(json);
+                                        }
+                                    });
+                                }
                                 json = {
                                     ElectionID : electionID
                                 };
@@ -133,7 +145,7 @@ exports.update = function(request, response) {
                             jsonData['start_date'] = moment(request.body.startDate).format('YYYY/MM/DD HH:mm:ss');
                         }
                         if(request.body.endDate != null) {
-                            jsonData['end_date'] = moment(request.endDate).format('YYYY/MM/DD HH:mm:ss');;
+                            jsonData['end_date'] = moment(request.endDate).format('YYYY/MM/DD HH:mm:ss');
                         }
                         if(request.body.vigilanceUserFirstName != null) {
                             jsonData['vigilance_user_id'] = request.body.vigilanceUserFirstName;

@@ -30,6 +30,53 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 
+/**
+ * @apiDefine AssociationNotFoundError
+ *
+ * @apiError AssociationNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/association Create User/Login
+ * @apiVersion 0.1.0
+ * @apiName CreateAssociation
+ * @apiGroup Vote
+ *
+ * @apiParam {String} associationName User's country name.
+ * @apiParam {String} associationAdminId User's city name.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *      "associationName": "Orgware",
+ *      "associationAdminId": "1"
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "AssociationID": 3
+ *      }
+ *
+ * @apiUse DatabaseError
+ *
+ *
+ */
+
 exports.create = function(request, response) {
   var json;
     try {
@@ -100,6 +147,7 @@ exports.create = function(request, response) {
         return response.status(500).json(json);
     }
 };
+
 
 
 exports.update = function(request, response) {

@@ -10,7 +10,7 @@ INSERT INTO `goounj`.`auth_type` (`type`) VALUES ('twitter');
 --
 INSERT INTO `goounj`.`poll_type` (`type`) VALUES ('quick');
 INSERT INTO `goounj`.`poll_type` (`type`) VALUES ('opinion');
-INSERT INTO `goounj`.`poll_type` (`type`) VALUES ('survey');
+INSERT INTO `goounj`.`poll_type` (`type`) VALUES ('feedback');
 
 --
 -- Dumping data for the table 'question_type'

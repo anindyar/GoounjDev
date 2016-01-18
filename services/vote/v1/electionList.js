@@ -36,7 +36,7 @@ var log = require('./../../../log');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.userId != null) && (request.body.limit != null) && (request.body.isVoted != null)) {
+        if((request.body.userId != null) && (request.body.upperLimit != null) && (request.body.lowerLimit != null) && (request.body.isVoted != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = ElectionList.Create)");
@@ -46,7 +46,7 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
                 if(request.body.isVoted == 2) {
-                    connection.query('(SELECT election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndName, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 0 LIMIT ?) UNION (SELECT election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndName, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 1 LIMIT ?)', [request.body.userId, request.body.limit, request.body.userId, request.body.limit], function(queryError, list) {
+                    connection.query('(SELECT election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndName, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 0 LIMIT ?, ?) UNION (SELECT election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndName, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 1 LIMIT ?, ?)', [request.body.userId, request.body.lowerLimit, request.body.upperLimit, request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
                             json = {
@@ -65,7 +65,7 @@ exports.create = function(request, response) {
                     });
                 }
                 if(request.body.isVoted == 0 || request.body.isVoted == 1) {
-                    connection.query('SELECT election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName FROM election INNER JOIN association ON election.association_id = association.id WHERE user_id = ? AND is_voted = ? LIMIT ?', [request.body.userId, request.body.isVoted, request.body.limit], function(queryError, list) {
+                    connection.query('SELECT election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndName, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = ? LIMIT ?, ?', [request.body.userId, request.body.isVoted, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
                             json = {
