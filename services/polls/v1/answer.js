@@ -91,7 +91,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.questionList !== null) && (request.body.questionList.optionId != null) && (request.body.questionList.questionId != null) && (request.body.userId != null) && (request.body.pollId != null)) {
+        if((request.body.questionList !== null) && (request.body.questionList != null) && (request.body.userId != null) && (request.body.pollId != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = Answer.create)");
