@@ -52,7 +52,7 @@ var log = require('./../../../log');
  */
 
 /**
- * @api {post} /vote/v1/association Create User/Login
+ * @api {post} /vote/v1/association Create Association
  * @apiVersion 0.1.0
  * @apiName CreateAssociation
  * @apiGroup Vote

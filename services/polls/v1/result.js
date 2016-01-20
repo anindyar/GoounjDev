@@ -125,37 +125,78 @@ exports.show = function(request, response) {
                     return response.status(500).json(json);
                 }
                 else {
-                    if (resultSet) {
-                        var jsonOutput = {
-                            pollName:           resultSet[0].pollName,
-                            category:           resultSet[0].category,
-                            createdUserId:      resultSet[0].createdUserId,
-                            questionList: []
-                        };
-                        var questionObj = {};
-
-                        resultSet.forEach(function(entry) {
-                            if (typeof questionObj[entry.question] == "undefined") {
-                                questionObj[entry.question] = [];
+                    if (resultSet[0]) {
+                        var choiceObj,jsonOutput,questionObj = {};
+                        connection.query('SELECT question.question AS question, question_options.`option` AS choices FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, choice) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to record a new answer. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
                             }
-                            var choiceObj = {
-                                choice:         entry.choices,
-                                resultCount:    entry.resultCount
-                            };
-                            questionObj[entry.question].push(choiceObj);
-                        });
+                            else {
+                                jsonOutput = {
+                                    pollName:           resultSet[0].pollName,
+                                    category:           resultSet[0].category,
+                                    createdUserId:      resultSet[0].createdUserId,
+                                    questionList: []
+                                };
 
-                        for (var question in questionObj) {
-                            if (questionObj.hasOwnProperty(question)) {
-                                jsonOutput.questionList.push({
-                                    choices: questionObj[question],
-                                    questionType: "text",
-                                    question: question
+                                choice.forEach(function(entree){
+                                    if (typeof questionObj[entree.question] == "undefined") {
+                                        questionObj[entree.question] = [];
+                                    }
+                                    var count = 0;
+                                    var num = 0;
+                                    resultSet.forEach(function(entry) {
+
+                                        choiceObj = {
+                                            choice:         entry.choices,
+                                            resultCount:    entry.resultCount
+                                        };
+                                        var arr = questionObj[entree.question];
+
+                                        for(i = 0; i < arr.length; i++) {
+                                            if(entry.choices == arr[i].choice) {
+                                                num++;
+                                            }
+                                        }
+                                        if(num == 0){
+                                            questionObj[entree.question].push(choiceObj);
+                                        }
+
+                                        if (entree.question == entry.question) {
+                                            if(entree.choices == entry.choices) {
+                                                count++;
+                                            }
+                                        }
+                                    });
+                                    if(count == 0) {
+                                        choiceObj = {
+                                            choice: entree.choices,
+                                            resultCount: 0
+                                        };
+                                        questionObj[entree.question].push(choiceObj);
+                                    }
                                 });
+
+
+                                for (var question in questionObj) {
+                                    if (questionObj.hasOwnProperty(question)) {
+                                        jsonOutput.questionList.push({
+                                            choices: questionObj[question],
+                                            questionType: "text",
+                                            question: question
+                                        });
+                                    }
+                                }
+
+
+                                log.info({Function: "Poll.Result"}, "Fetched Poll Results. Poll Id: " + request.params.id);
+                                return response.status(200).json(jsonOutput);
                             }
-                        }
-                        log.info({Function: "Poll.Result"}, "Fetched Poll Results. Poll Id: " + request.params.id);
-                        return response.status(200).json(jsonOutput);
+                        });
                     }
                     else {
                         log.info({Function: "Poll.Result"}, "Requested Poll Result Not Found");

@@ -45,7 +45,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.vote WHERE user_id = ? AND election_id = ?', [request.body.voterId, request.body.electionId], function(queryError, check) {
+                connection.query('SELECT id FROM '+ config.mysql.db.name +'.vote WHERE user_id = ? AND election_id = ?', [request.body.userId, request.body.electionId], function(queryError, check) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. Failed to record vote. ElectionID: " + JSON.stringify(request.body.electionId) + " & CandidateID: " + JSON.stringify(request.body.candidateId) + "(Function = Vote.Create)");
                         json = {
@@ -53,7 +53,8 @@ exports.create = function(request, response) {
                         };
                         return response.status(500).json(json);
                     }
-                    if(check[0]) {
+                    if(check[0] != null) {
+                        console.log(check);
                         json = {
                             message: "User has already cast a vote for this election."
                         };
@@ -72,7 +73,7 @@ exports.create = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             else if(entry){
-                                connection.query('UPDATE '+ config.mysql.db.name +'.election_user_map SET is_voted = ? AND voted_time = ?', ["1", utcTimeStamp], function(queryError, item) {
+                                connection.query('UPDATE '+ config.mysql.db.name +'.election_user_map SET is_voted = ?, voted_time = ?', [1, utcTimeStamp], function(queryError, item) {
                                     if(queryError != null) {
                                         log.error(queryError, "Query error. Failed to update election_voter_map.(Function = Vote.Create)");
                                         json = {
