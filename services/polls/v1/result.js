@@ -112,7 +112,7 @@ exports.show = function(request, response) {
             if (connectionError != null) {
                 log.error(connectionError, "Database Connection Error (Function = Poll.Result)");
                 json = {
-                    error: "Poll Delete failed. Database could not be reached."
+                    error: "Poll Results failed. Database could not be reached."
                 };
                 return response.status(500).json(json);
             }
@@ -167,8 +167,6 @@ exports.show = function(request, response) {
                                                 questionObj[choiceEntry.question].push(choiceObj);
                                             }
                                         }
-
-
 
                                         if (choiceEntry.question == resultEntry.question) {
                                             if(choiceEntry.choices == resultEntry.choices) {

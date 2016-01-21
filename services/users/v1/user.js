@@ -517,6 +517,9 @@ exports.update = function(request, response) {
                         if(request.body.city != null) {
                             jsonData['city'] = request.body.city;
                         }
+                        if(request.body.age != null) {
+                            jsonData['age'] = request.body.age;
+                        }
                         if (request.body.email != null) {
                             var emailFilter = config.emailFilterRegex;
                             if (!emailFilter.test(request.body.email)) {

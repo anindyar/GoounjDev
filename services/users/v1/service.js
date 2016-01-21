@@ -45,6 +45,10 @@ module.exports = {
             name: 'verification',
             methods: require('./verification'),
             auth: 'bypass'
+        }, {
+            name: 'changeNumber',
+            methods: require('./changeNumber'),
+            auth: 'bypass'
         }
     ]
 };
