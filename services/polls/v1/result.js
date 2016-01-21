@@ -143,41 +143,45 @@ exports.show = function(request, response) {
                                     questionList: []
                                 };
 
-                                choice.forEach(function(entree){
-                                    if (typeof questionObj[entree.question] == "undefined") {
-                                        questionObj[entree.question] = [];
+                                choice.forEach(function(choiceEntry){
+                                    if (typeof questionObj[choiceEntry.question] == "undefined") {
+                                        questionObj[choiceEntry.question] = [];
                                     }
                                     var count = 0;
                                     var num = 0;
-                                    resultSet.forEach(function(entry) {
-
+                                    resultSet.forEach(function(resultEntry) {
                                         choiceObj = {
-                                            choice:         entry.choices,
-                                            resultCount:    entry.resultCount
+                                            choice:         resultEntry.choices,
+                                            resultCount:    resultEntry.resultCount
                                         };
-                                        var arr = questionObj[entree.question];
+                                        var arr = questionObj[choiceEntry.question];
 
                                         for(i = 0; i < arr.length; i++) {
-                                            if(entry.choices == arr[i].choice) {
+                                            if(resultEntry.choices == arr[i].choice) {
                                                 num++;
                                             }
                                         }
-                                        if(num == 0){
-                                            questionObj[entree.question].push(choiceObj);
+
+                                        if (choiceEntry.question == resultEntry.question) {
+                                            if(num == 0){
+                                                questionObj[choiceEntry.question].push(choiceObj);
+                                            }
                                         }
 
-                                        if (entree.question == entry.question) {
-                                            if(entree.choices == entry.choices) {
+
+
+                                        if (choiceEntry.question == resultEntry.question) {
+                                            if(choiceEntry.choices == resultEntry.choices) {
                                                 count++;
                                             }
                                         }
                                     });
                                     if(count == 0) {
                                         choiceObj = {
-                                            choice: entree.choices,
+                                            choice: choiceEntry.choices,
                                             resultCount: 0
                                         };
-                                        questionObj[entree.question].push(choiceObj);
+                                        questionObj[choiceEntry.question].push(choiceObj);
                                     }
                                 });
 
