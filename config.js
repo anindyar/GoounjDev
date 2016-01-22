@@ -106,9 +106,9 @@ config = {
 if (process.env.NODE_ENV == 'production') {
 
     // Production db setup
-    config.mysql.server.host = 'goounjdb.cloudapp.net';
-    config.mysql.db.username = 'dev';
-    config.mysql.db.password = 'dev@123';
+    config.mysql.server.host = 'goounjapp.cie8sbuommwq.ap-southeast-1.rds.amazonaws.com ';
+    config.mysql.db.username = 'goounj';
+    config.mysql.db.password = 'Goounj!768';
     config.mysql.server.port = 3306;
     config.mysql.db.name = 'goounj';
 
