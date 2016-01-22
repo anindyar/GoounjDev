@@ -40,15 +40,14 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `goounj`.`user` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `first_name` VARCHAR(45) NULL,
-  `last_name` VARCHAR(45) NULL,
+  `name` VARCHAR(45) NULL,
   `email` VARCHAR(45) NULL,
   `phone` VARCHAR(45) NOT NULL,
   `password` VARCHAR(120) NULL,
   `public_key` VARCHAR(120) NULL,
   `secret_key` VARCHAR(200) NULL,
   `gender` VARCHAR(45) NULL,
-  `dob` VARCHAR(45) NULL,
+  `age` INT NULL,
   `access_time` DATETIME NULL,
   `created_time` DATETIME NULL,
   `updated_time` DATETIME NULL,
@@ -373,6 +372,191 @@ CREATE TABLE IF NOT EXISTS `goounj`.`subscription_usage` (
   INDEX `fk_subscription_usage_user1_idx` (`user_id` ASC),
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_subscription_usage_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`association`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`association` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NOT NULL,
+  `admin_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_association_user1_idx` (`admin_id` ASC),
+  CONSTRAINT `fk_association_user1`
+    FOREIGN KEY (`admin_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`association_user_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`association_user_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `association_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_association_user_map_user1_idx` (`user_id` ASC),
+  INDEX `fk_association_user_map_association1_idx` (`association_id` ASC),
+  CONSTRAINT `fk_association_user_map_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_association_user_map_association1`
+    FOREIGN KEY (`association_id`)
+    REFERENCES `goounj`.`association` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`election`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`election` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `created_date` DATETIME NULL,
+  `start_date` DATETIME NULL,
+  `end_date` DATETIME NULL,
+  `nomination_end_date` DATETIME NULL,
+  `vigilance_user_id` INT NOT NULL,
+  `association_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_election_user1_idx` (`vigilance_user_id` ASC),
+  INDEX `fk_election_association1_idx` (`association_id` ASC),
+  CONSTRAINT `fk_election_user1`
+    FOREIGN KEY (`vigilance_user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_election_association1`
+    FOREIGN KEY (`association_id`)
+    REFERENCES `goounj`.`association` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`election_vigilance_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`election_vigilance_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`candidate`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`candidate` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `election_id` INT NOT NULL,
+  `is_accepted` TINYINT(1) NULL DEFAULT 0,
+  `name` VARCHAR(45) NULL,
+  `nick_name` VARCHAR(45) NULL,
+  `about` VARCHAR(150) NULL,
+  `manifesto` VARCHAR(150) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_nominee_user1_idx` (`user_id` ASC),
+  INDEX `fk_nominee_election1_idx` (`election_id` ASC),
+  CONSTRAINT `fk_nominee_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_nominee_election1`
+    FOREIGN KEY (`election_id`)
+    REFERENCES `goounj`.`election` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`vote`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`vote` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `time` DATETIME NULL,
+  `nominee_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `election_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_vote_nominee1_idx` (`nominee_id` ASC),
+  INDEX `fk_vote_user1_idx` (`user_id` ASC),
+  INDEX `fk_vote_election1_idx` (`election_id` ASC),
+  CONSTRAINT `fk_vote_nominee1`
+    FOREIGN KEY (`nominee_id`)
+    REFERENCES `goounj`.`candidate` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vote_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vote_election1`
+    FOREIGN KEY (`election_id`)
+    REFERENCES `goounj`.`election` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`election_user_map`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`election_user_map` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `voted_time` DATETIME NULL,
+  `election_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `is_voted` TINYINT(1) NULL DEFAULT 0,
+  `association_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_voter_election_map_election1_idx` (`election_id` ASC),
+  INDEX `fk_voter_election_map_user1_idx` (`user_id` ASC),
+  INDEX `fk_election_user_map_association1_idx` (`association_id` ASC),
+  CONSTRAINT `fk_voter_election_map_election1`
+    FOREIGN KEY (`election_id`)
+    REFERENCES `goounj`.`election` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_voter_election_map_user1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_election_user_map_association1`
+    FOREIGN KEY (`association_id`)
+    REFERENCES `goounj`.`association` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`two_step_verification`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`two_step_verification` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `auth_code` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_two_step_verification_user1_idx` (`user_id` ASC),
+  CONSTRAINT `fk_two_step_verification_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `goounj`.`user` (`id`)
     ON DELETE NO ACTION
