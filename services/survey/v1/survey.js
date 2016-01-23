@@ -94,7 +94,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
   var json;
     try{
-        if((request.body.questionList !== null) && (request.body.fname != null) && (request.body.lname != null) && (request.body.phone != null) && (request.body.pollId != null)) {
+        if((request.body.questionList !== null) && (request.body.name != null) && (request.body.phone != null) && (request.body.pollId != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = Poll.Answer)");
@@ -104,8 +104,8 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
                 var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
-                var fname = request.body.fname, lname = request.body.lname;
-                connection.query('SET @userId = 0; CALL setAudienceForSurvey(?, ?, ?, ?, ?, @userId); SELECT @userId AS userId;', [request.body.phone, request.body.pollId, utcTimeStamp, fname, lname], function (queryError, user) {
+                var name = request.body.name;
+                connection.query('SET @userId = 0; CALL setAudienceForSurvey(?, ?, ?, ?, ?, @userId); SELECT @userId AS userId;', [request.body.phone, request.body.pollId, utcTimeStamp, name], function (queryError, user) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Survey.Create)");
                         jsn = {

@@ -36,7 +36,7 @@ exports.update = function(request, response) {
         if(request.body.oldNumber != null && request.body.newNumber != null) {
 
             var phoneFilter = /^\d{10}$/;
-            if(request.body.phone.match(phoneFilter)) {
+            if(!request.body.phone.match(phoneFilter)) {
                 jsonData['phone'] = request.body.phone;
             } else {
                 json = {
@@ -103,3 +103,17 @@ exports.update = function(request, response) {
     }
 };
 
+
+exports.create = function(request, response) {
+    try{
+        console.log(request.body);
+        return response.sendStatus(200);
+    }
+    catch(error){
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception occured. (Function: ChangeNumber.create)");
+        return response.status(500).json(json);
+    }
+};
