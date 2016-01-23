@@ -105,7 +105,7 @@ exports.create = function(request, response) {
                 }
                 var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
                 var name = request.body.name;
-                connection.query('SET @userId = 0; CALL setAudienceForSurvey(?, ?, ?, ?, ?, @userId); SELECT @userId AS userId;', [request.body.phone, request.body.pollId, utcTimeStamp, name], function (queryError, user) {
+                connection.query('SET @userId = 0; CALL setAudienceForSurvey(?, ?, ?, ?, @userId); SELECT @userId AS userId;', [request.body.phone, request.body.pollId, utcTimeStamp, name], function (queryError, user) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Survey.Create)");
                         jsn = {
