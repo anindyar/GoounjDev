@@ -122,7 +122,7 @@ exports.create = function(request, response) {
                             if(check) {
                                 for(var i=0; i<questionAnswer.length; i++) {
                                     if((questionAnswer[i].questionId != null) && (questionAnswer[i].optionId != null)) {
-                                        connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, question_id, question_options_id, user_id) VALUES (?, ?, ?, ?)', [utcTimeStamp, questionAnswer[i].questionId, questionAnswer[i].optionId, request.body.userId], function (queryError, result) {
+                                        connection.query('INSERT INTO ' + config.mysql.db.name + '.answer (time, poll_id, question_id, question_options_id, user_id) VALUES (?, ?, ?, ?, ?)', [utcTimeStamp, request.body.pollId, questionAnswer[i].questionId, questionAnswer[i].optionId, request.body.userId], function (queryError, result) {
                                             if (queryError != null) {
                                                 log.error(queryError, "Query error. Failed to record a new answer. Answer details: PollID " + JSON.stringify(request.body.pollId) + "(Function = Answer.create)");
                                                 json = {

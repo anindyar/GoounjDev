@@ -54,7 +54,6 @@ exports.create = function(request, response) {
                         return response.status(500).json(json);
                     }
                     if(check[0] != null) {
-                        console.log(check);
                         json = {
                             message: "User has already cast a vote for this election."
                         };

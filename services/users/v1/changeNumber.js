@@ -64,7 +64,7 @@ exports.update = function(request, response) {
                     }
                     else if(change[0]) {
                         if(change[0].phone == request.body.oldNumber) {
-                            connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, result) {
+                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.user WHERE phone = ?', [jsonData, request.body.newNumber], function(queryError, check) {
                                 if(queryError != null) {
                                     log.error(queryError, "Query error. Failed to create an election. (Function = ChangeNumber.Update)");
                                     json = {
@@ -72,17 +72,36 @@ exports.update = function(request, response) {
                                     };
                                     return response.status(500).json(json);
                                 }
+                                else if(!check[0]) {
+                                    connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, result) {
+                                        if(queryError != null) {
+                                            log.error(queryError, "Query error. Failed to create an election. (Function = ChangeNumber.Update)");
+                                            json = {
+                                                error: "Requested action failed. Database could not be reached."
+                                            };
+                                            return response.status(500).json(json);
+                                        }
+                                        else {
+                                            log.info({Function: "ChangeNumber.Update"}, "Phone Number changed. New number" + request.body.newNumber );
+                                            return response.sendStatus(200);
+                                        }
+                                    });
+                                }
                                 else {
-                                    log.info({Function: "ChangeNumber.Update"}, "Phone Number changed. New number" + request.body.newNumber );
-                                    return response.sendStatus(200);
+                                    json ={
+                                        error: "An account already exists for that number."
+                                    };
+                                    log.error({Function: "ChangeNumber.Update"}, "An account already exists for that number.");
+                                    return response.status(400).json(json);
                                 }
                             });
+
                         }
                         else {
                             json = {
                                 error: "Old phone number does not match."
                             };
-                            log.info({Function: "ChangeNumber.Update"}, "Old Phone Number mismatch." + request.body.oldNumber );
+                            log.info({Function: "ChangeNumber.Update"}, "Old Phone Number does not exists." + request.body.oldNumber );
                             return response.status(501).json(json);
                         }
                     }

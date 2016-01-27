@@ -132,7 +132,7 @@ exports.show = function(request, response) {
                                     return response.status(500).json(json);
                                 }
                                 else {
-                                    log.info({Function: "otp.Show"}, "otp generation for vote successful.");
+                                    log.info({Function: "otp.Show"}, "otp generation successful.");
                                     return response.sendStatus(200);
                                 }
                             });

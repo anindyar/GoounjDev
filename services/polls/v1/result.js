@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the poll answer service.
+ * This file contains the logic for the poll result service.
  *
  *************************************************************************/
 var config = require('./../../../config');
@@ -118,7 +118,7 @@ exports.show = function(request, response) {
             }
             connection.query('SELECT poll.poll_name AS pollName,(SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, poll.created_user_id AS createdUserId, question.question AS question, question_options.`option` AS choices, COUNT(answer.question_options_id) AS resultCount FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id RIGHT JOIN answer ON (answer.question_id = question.id) AND (answer.question_options_id = question_options.id) WHERE poll.id = ? GROUP BY answer.question_options_id;', request.params.id, function(queryError, resultSet) {
                 if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to record a new answer. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                    log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
                     json = {
                         error: "Requested action failed. Database could not be reached."
                     };
@@ -129,7 +129,7 @@ exports.show = function(request, response) {
                         var choiceObj,jsonOutput,questionObj = {};
                         connection.query('SELECT question.question AS question, question_options.`option` AS choices FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, choice) {
                             if (queryError != null) {
-                                log.error(queryError, "Query error. Failed to record a new answer. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                                log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
                                 json = {
                                     error: "Requested action failed. Database could not be reached."
                                 };

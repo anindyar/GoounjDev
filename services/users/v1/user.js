@@ -263,9 +263,9 @@ exports.create = function(request, response) {
         }
         else {
             jsn ={
-                error: "Country, city, phone, deviceId, deviceToken, osType, osVersion are required."
+                error: "Country, city, phone, deviceId, deviceToken, osType, osVersion and name are required."
             };
-            log.error({Function: "User.Create"}, "Country, city, phone, deviceId, deviceToken, osType, osVersion are required.");
+            log.error({Function: "User.Create"}, "Country, city, phone, deviceId, deviceToken, osType, osVersion and name are required.");
             return response.status(400).json(jsn);
         }
     }
