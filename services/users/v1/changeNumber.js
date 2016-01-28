@@ -23,28 +23,18 @@
  * FILE SUMMARY
  * __________________
  *
- * Main config file.
+ * This file contains the logic for the change number service.
  *
  *************************************************************************/
 
 var config = require('./../../../config');
 var log = require('./../../../log');
+var otp = require('./../../../otp');
 
 exports.update = function(request, response) {
     var json, jsonData = {};
     try {
         if(request.body.oldNumber != null && request.body.newNumber != null) {
-
-            var phoneFilter = /^\d{10}$/;
-            if(!request.body.phone.match(phoneFilter)) {
-                jsonData['phone'] = request.body.phone;
-            } else {
-                json = {
-                    error: "Not a valid phone number"
-                };
-                log.info({Function: "ChangeNumber.Update"}, "Not a valid phone number. New Number:" + request.body.newNumber);
-                return response.status(400).json(json);
-            }
 
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
@@ -64,7 +54,7 @@ exports.update = function(request, response) {
                     }
                     else if(change[0]) {
                         if(change[0].phone == request.body.oldNumber) {
-                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.user WHERE phone = ?', [jsonData, request.body.newNumber], function(queryError, check) {
+                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.user WHERE phone = ?', request.body.newNumber, function(queryError, check) {
                                 if(queryError != null) {
                                     log.error(queryError, "Query error. Failed to create an election. (Function = ChangeNumber.Update)");
                                     json = {
@@ -73,7 +63,7 @@ exports.update = function(request, response) {
                                     return response.status(500).json(json);
                                 }
                                 else if(!check[0]) {
-                                    connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, result) {
+                                    connection.query('UPDATE '+ config.mysql.db.name +'.user SET phone = ? WHERE id = ?', [request.body.newNumber, request.params.id], function(queryError, result) {
                                         if(queryError != null) {
                                             log.error(queryError, "Query error. Failed to create an election. (Function = ChangeNumber.Update)");
                                             json = {
@@ -82,8 +72,8 @@ exports.update = function(request, response) {
                                             return response.status(500).json(json);
                                         }
                                         else {
-                                            log.info({Function: "ChangeNumber.Update"}, "Phone Number changed. New number" + request.body.newNumber );
-                                            return response.sendStatus(200);
+                                            otp.sendotp(request, response);
+                                            log.info({Function: "ChangeNumber.Update"}, "Phone Number changed. New number: " + request.body.newNumber );
                                         }
                                     });
                                 }
@@ -112,6 +102,13 @@ exports.update = function(request, response) {
                 });
             });
         }
+        else {
+            json ={
+                error: "oldNumber and newNumber are required."
+            };
+            log.error({Function: "ChangeNumber.Create"}, "oldNumber and newNumber are required");
+            return response.status(400).json(json);
+        }
     }
     catch(error){
         json = {
@@ -123,16 +120,3 @@ exports.update = function(request, response) {
 };
 
 
-exports.create = function(request, response) {
-    try{
-        console.log(request.body);
-        return response.sendStatus(200);
-    }
-    catch(error){
-        json = {
-            error: "Error: " + error.message
-        };
-        log.error(error, "Exception occured. (Function: ChangeNumber.create)");
-        return response.status(500).json(json);
-    }
-};

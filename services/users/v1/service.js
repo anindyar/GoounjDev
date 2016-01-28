@@ -49,6 +49,10 @@ module.exports = {
             name: 'changeNumber',
             methods: require('./changeNumber'),
             auth: 'bypass'
+        },{
+            name: 'verifyNumber',
+            methods: require('./verifyNumber'),
+            auth: 'bypass'
         }, {
             name: 'timeline',
             methods: require('./timeline'),
