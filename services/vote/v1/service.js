@@ -47,7 +47,7 @@ module.exports = {
             auth: 'bypass'
         }, {
             name: 'otp',
-            methods: require('./../../../otp'),
+            methods: require('./../../oauth/v1/otp'),
             auth: 'bypass'
         }, {
             name: 'associationList',

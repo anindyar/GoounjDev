@@ -28,9 +28,9 @@
  *************************************************************************/
 
 
-var sms = require('./sms');
-var config = require('./config');
-var log = require('./log');
+var sms = require('./../../../sms');
+var config = require('./../../../config');
+var log = require('./../../../log');
 
 //otp verification
 exports.create = function(request, response) {
