@@ -152,7 +152,7 @@ exports.create = function(request, response) {
                                 //var endDate = resultList[i].endDate.toString();
 
                                 pollOBJ = {
-                                    pollID: resultList[i].pollId,
+                                    pollId: resultList[i].pollId,
                                     startDate: resultList[i].startDate,
                                     endDate: resultList[i].endDate,
                                     pollName: resultList[i].pollName,
@@ -190,7 +190,7 @@ exports.create = function(request, response) {
                                 //var endDate = resultList[i].endDate.toString();
 
                                 pollOBJ = {
-                                    pollID: resultList[i].pollId,
+                                    pollId: resultList[i].pollId,
                                     startDate: resultList[i].startDate,
                                     endDate: resultList[i].endDate,
                                     pollName: resultList[i].pollName,
