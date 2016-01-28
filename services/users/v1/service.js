@@ -49,6 +49,10 @@ module.exports = {
             name: 'changeNumber',
             methods: require('./changeNumber'),
             auth: 'bypass'
+        }, {
+            name: 'timeline',
+            methods: require('./timeline'),
+            auth: 'bypass'
         }
     ]
 };

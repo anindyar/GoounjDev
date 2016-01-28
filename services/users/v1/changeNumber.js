@@ -88,7 +88,7 @@ exports.update = function(request, response) {
                                     });
                                 }
                                 else {
-                                    json ={
+                                    json = {
                                         error: "An account already exists for that number."
                                     };
                                     log.error({Function: "ChangeNumber.Update"}, "An account already exists for that number.");

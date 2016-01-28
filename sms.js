@@ -33,7 +33,7 @@ var http = require('http');
 
 exports.sendSMS = function(recipientList, text) {
 
-    if(config.sms.enabled) {
+    if(config.sms.enabled && recipientList.length != 0) {
         for (var i=0; i<recipientList.length; i++) {
             var content = encodeURIComponent(text);
             var options = {

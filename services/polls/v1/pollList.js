@@ -66,7 +66,9 @@ var moment = require('moment');
  * @apiParamExample {json} Request-Example:
  *     {
  *           "userId": "4",
- *           "limit": "15"
+ *           "lowerLimit": 1,
+ *           "upperLimit": 10,
+ *           "isAnswered": 2
  *      }
  *
  * @apiSuccessExample Success-Response:
@@ -122,7 +124,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.userId !== null) && (request.body.limit != null)) {
+        if((request.body.userId !== null) && (request.body.lowerLimit != null) && (request.body.upperLimit != null) && (request.body.isAnswered != null)) {
             request.getConnection(function (connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = PollList.Create)");
@@ -131,25 +133,84 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-
                 var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
-                connection.query('(SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = ? AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)) LIMIT ?', [utcTimeStamp, request.body.userId, "1", request.body.userId, request.body.limit], function(queryError, result) {
-                    if (queryError != null) {
-                        log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
-                        json = {
-                            error: "Requested action failed. Database could not be reached."
-                        };
-                        return response.status(500).json(json);
-                    }
-                    else if(result) {
-                        log.info({Function: "PollList.Create"}, "Fetched Poll List.");
-                        return response.status(200).json(result);
-                    }
-                    else {
-                        log.info({Function: "PollList.Create"}, "Requested UserId not found.");
-                        return response.sendStatus(404);
-                    }
-                });
+
+                if(request.body.isAnswered == 2) {
+                    connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)); (SELECT * FROM polls WHERE isAnswered = 0 ORDER BY startDate LIMIT ?, ?) UNION (SELECT * FROM polls WHERE isAnswered = 1 ORDER BY startDate LIMIT ?, ?); ', [utcTimeStamp, request.body.userId, request.body.userId, request.body.lowerLimit, request.body.upperLimit,  request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
+                        if (queryError != null) {
+                            log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
+                            json = {
+                                error: "Requested action failed. Database could not be reached."
+                            };
+                            return response.status(500).json(json);
+                        }
+                        else if(result) {
+                            var pollList = [], pollOBJ = {};
+                            var resultList = result[1];
+                            for(i = 0; i < resultList.length; i++) {
+                                //var startDate = resultList[i].startDate.toString();
+                                //var endDate = resultList[i].endDate.toString();
+
+                                pollOBJ = {
+                                    pollID: resultList[i].pollId,
+                                    startDate: resultList[i].startDate,
+                                    endDate: resultList[i].endDate,
+                                    pollName: resultList[i].pollName,
+                                    isBoost: resultList[i].isBoost,
+                                    isGeneric: resultList[i].isGeneric,
+                                    isActive: resultList[i].isActive,
+                                    isAnswered: resultList[i].isAnswered,
+                                    createdUserName: resultList[i].createdUserName
+                                };
+                                pollList.push(pollOBJ);
+                            }
+                            log.info({Function: "PollList.Create"}, "Fetched Poll List.");
+                            return response.status(200).json(pollList);
+                        }
+                        else {
+                            log.info({Function: "PollList.Create"}, "Requested UserId not found.");
+                            return response.sendStatus(404);
+                        }
+                    });
+                }
+                if(request.body.isAnswered == 0 || request.body.isAnswered == 1) {
+                    connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?));SELECT * FROM polls WHERE isAnswered = ? ORDER BY startDate LIMIT ?, ?;',[utcTimeStamp, request.body.userId, request.body.userId, request.body.isAnswered, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
+                        if (queryError != null) {
+                            log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
+                            json = {
+                                error: "Requested action failed. Database could not be reached."
+                            };
+                            return response.status(500).json(json);
+                        }
+                        else if(result) {
+                            var pollList = [], pollOBJ = {};
+                            var resultList = result[1];
+                            for(i = 0; i < resultList.length; i++) {
+                                //var startDate = resultList[i].startDate.toString();
+                                //var endDate = resultList[i].endDate.toString();
+
+                                pollOBJ = {
+                                    pollID: resultList[i].pollId,
+                                    startDate: resultList[i].startDate,
+                                    endDate: resultList[i].endDate,
+                                    pollName: resultList[i].pollName,
+                                    isBoost: resultList[i].isBoost,
+                                    isGeneric: resultList[i].isGeneric,
+                                    isActive: resultList[i].isActive,
+                                    isAnswered: resultList[i].isAnswered,
+                                    createdUserName: resultList[i].createdUserName
+                                };
+                                pollList.push(pollOBJ);
+                            }
+                            log.info({Function: "PollList.Create"}, "Fetched Poll List.");
+                            return response.status(200).json(pollList);
+                        }
+                        else if(!result[0]) {
+                            log.info({Function: "PollList.Create"}, "Requested UserId not found.");
+                            return response.sendStatus(404);
+                        }
+                    });
+                }
             });
         }
     }

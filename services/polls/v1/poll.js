@@ -121,6 +121,10 @@ exports.create = function(request, response) {
     var json;
     try {
         if((request.body.pollName != null)  && (request.body.questionList != null) && (request.body.category != null)) {
+            var updatedAudienceList = request.body.audience;
+            for (var k = 0; k < updatedAudienceList.length; k++) {
+                updatedAudienceList[k] = updatedAudienceList[k].replace(/\s+/g, '').substr(-10);
+            }
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = Poll.Create)");
@@ -191,14 +195,11 @@ exports.create = function(request, response) {
                             });
 
                             if(request.body.audience != null && request.body.audience.length != null) {
-                                var audienceList = request.body.audience;
                                 var tokenList = [], phoneList = [], nonExistingUsers = request.body.audience;
-
-                                for (var k = 0; k < audienceList.length; k++) {
+                                for (var k = 0; k < updatedAudienceList.length; k++) {
                                     (function () {
                                         var kCopy = k;
-                                        var number = audienceList[kCopy];
-                                        number = number.replace(/\s+/g, '').substr(-10);
+                                        var number = updatedAudienceList[kCopy];
                                         connection.query('CALL setAudienceForPoll(?, ?);', [number, pollID], function (queryError, user) {
 
                                             if (queryError != null) {
@@ -212,7 +213,7 @@ exports.create = function(request, response) {
                                     }());
                                 }
 
-                                connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', [request.body.audience], function (queryError, list) {
+                                connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', updatedAudienceList, function (queryError, list) {
                                     if (queryError != null) {
                                         log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
                                         json = {

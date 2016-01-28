@@ -28,9 +28,9 @@
  *************************************************************************/
 
 
-var sms = require('./../../../sms');
-var config = require('./../../../config');
-var log = require('./../../../log');
+var sms = require('./sms');
+var config = require('./config');
+var log = require('./log');
 
 //otp verification
 exports.create = function(request, response) {
@@ -110,7 +110,6 @@ exports.show = function(request, response) {
                     if(config.userVerification.enabled) {
                         var phoneArray = [];
                         phoneArray.push(number[0].phone);
-
                         sms.sendSMS(phoneArray, "This is Goounj OTP Service. Please enter the following verification code. Auth Code: " + authCode);
                     }
 
