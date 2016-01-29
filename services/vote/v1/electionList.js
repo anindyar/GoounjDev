@@ -104,7 +104,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                if(request.body.isVoted == 2) {
+                if (request.body.isVoted == 2) {
                     connection.query('(SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 0 LIMIT ?, ?) UNION (SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 1 LIMIT ?, ?)', [request.body.userId, request.body.lowerLimit, request.body.upperLimit, request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
@@ -116,9 +116,9 @@ exports.create = function(request, response) {
                         else if(list) {
                             var electionOBJ = {}, electionList = [];
                             for(i = 0; i < list.length; i++) {
-                                var startDate = list[i].startDate.toLocaleString();
-                                var endDate = list[i].endDate.toLocaleString();
-                                var nominationEndDate = list[i].nominationEndDate.toLocaleString();
+                                var startDate = list[i].startDate.toString();
+                                var endDate = list[i].endDate.toString();
+                                var nominationEndDate = list[i].nominationEndDate.toString();
 
                                 electionOBJ = {
                                     electionId: list[i].electionId,
@@ -152,9 +152,9 @@ exports.create = function(request, response) {
                         else if(list) {
                             var electionOBJ = {}, electionList = [];
                             for(i = 0; i < list.length; i++) {
-                                var startDate = list[i].startDate.toLocaleString();
-                                var endDate = list[i].endDate.toLocaleString();
-                                var nominationEndDate = list[i].nominationEndDate.toLocaleString();
+                                var startDate = list[i].startDate.toString();
+                                var endDate = list[i].endDate.toString();
+                                var nominationEndDate = list[i].nominationEndDate.toString();
 
                                 electionOBJ = {
                                     electionId: list[i].electionId,
@@ -168,7 +168,7 @@ exports.create = function(request, response) {
                                 electionList.push(electionOBJ);
                             }
                             log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
-                            return response.status(200).json(list);
+                            return response.status(200).json(electionList);
                         }
                         else {
                             log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
