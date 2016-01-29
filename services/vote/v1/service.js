@@ -46,10 +46,6 @@ module.exports = {
             methods: require('./vote'),
             auth: 'bypass'
         }, {
-            name: 'otp',
-            methods: require('./../../../otp'),
-            auth: 'bypass'
-        }, {
             name: 'associationList',
             methods: require('./associationList'),
             auth: 'bypass'
