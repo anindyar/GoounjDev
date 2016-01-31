@@ -27,7 +27,7 @@
  * 
  *************************************************************************/
 
-var cafile, cafiles, config, fs;
+var config, fs;
 
 fs = require('fs');
 
@@ -114,23 +114,12 @@ if (process.env.NODE_ENV == 'production') {
 
     // production http/https setup
     config.http.port = 80;
-    config.https.enabled = false;
+    config.https.enabled = true;
     config.https.port = 443;
 
-    // Production ssl support
-    //cafiles = ['/web/cert/EssentialSSLCA_2.crt', '/web/cert/ComodoUTNSGCCA.crt', '/web/cert/UTNAddTrustSGCCA.crt', '/web/cert/AddTrustExternalCARoot.crt'];
-    //config.http.port = 80;
-    //config.https.options.key = fs.readFileSync('/web/cert/star_re3tech_com.key');
-    //config.https.options.cert = fs.readFileSync('/web/cert/star_re3tech_com.crt');
-    //config.https.options.ca = (function() {
-    //    var _i, _len, _results;
-    //    _results = [];
-    //    for (_i = 0, _len = cafiles.length; _i < _len; _i++) {
-    //        cafile = cafiles[_i];
-    //        _results.push(fs.readFileSync(cafile));
-    //    }
-    //    return _results;
-    //})();
+    config.https.options.key = fs.readFileSync('/opt/keys/goounj.pem').toString();
+    config.https.options.cert = fs.readFileSync('/opt/keys/390bf26c081e0f43.crt').toString();
+    config.https.options.ca = fs.readFileSync('/opt/keys/gd_bundle-g2-g1.crt').toString();
 
 } else {
     // Development environment setup
