@@ -30,18 +30,9 @@ var config = require('./../../../config');
 var log = require('./../../../log');
 
 /**
- * @apiDefine PollNotFoundError
+ * @apiDefine SurveyNotFoundError
  *
- * @apiError PollNotFound The requested user was not found.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- */
-
-/**
- * @apiDefine UserNotFoundError
- *
- * @apiError UserNotFound The requested user was not found.
+ * @apiError SurveyNotFound The requested survey was not found.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 404 Not Found
@@ -60,12 +51,12 @@ var log = require('./../../../log');
  */
 
 /**
- * @api {show} /poll/v1/Result/:id  Show poll results
+ * @api {show} /survey/v1/surveyResult/:id  Show survey results
  * @apiVersion 0.1.0
- * @apiName Poll Result
- * @apiGroup Poll
+ * @apiName Survey Result
+ * @apiGroup Survey
  *
- * @apiParam {String} id Poll Id.
+ * @apiParam {String} id SurveyPoll Id.
  *
  *
  * @apiSuccessExample Success-Response:
@@ -124,7 +115,7 @@ var log = require('./../../../log');
  *
  * @apiUse DatabaseError
  *
- * @apiUse PollNotFoundError
+ * @apiUse SurveyNotFoundError
  *
  */
 
@@ -134,15 +125,15 @@ exports.show = function(request, response) {
     try {
         request.getConnection(function(connectionError, connection) {
             if (connectionError != null) {
-                log.error(connectionError, "Database Connection Error (Function = Poll.Result)");
+                log.error(connectionError, "Database Connection Error (Function = SurveyResult.Create)");
                 json = {
-                    error: "Poll Results failed. Database could not be reached."
+                    error: "Survey Poll Results failed. Database could not be reached."
                 };
                 return response.status(500).json(json);
             }
             connection.query('SELECT poll.poll_name AS pollName,(SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, poll.created_user_id AS createdUserId, question.question AS question, question_options.`option` AS choices, COUNT(answer.question_options_id) AS resultCount FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id RIGHT JOIN answer ON (answer.question_id = question.id) AND (answer.question_options_id = question_options.id) WHERE poll.id = ? GROUP BY answer.question_options_id;', request.params.id, function(queryError, resultSet) {
                 if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                    log.error(queryError, "Query error. Failed to fetch poll results. Survey Poll Result details " + JSON.stringify(request.params.id) + "(Function = SurveyResult.Create)");
                     json = {
                         error: "Requested action failed. Database could not be reached."
                     };
@@ -153,7 +144,7 @@ exports.show = function(request, response) {
                         var choiceObj,jsonOutput,questionObj = {};
                         connection.query('SELECT question.question AS question, question_options.`option` AS choices FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, choice) {
                             if (queryError != null) {
-                                log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                                log.error(queryError, "Query error. Failed to fetch poll results. Survey Poll Result details " + JSON.stringify(request.params.id) + "(Function = SurveyResult.Create)");
                                 json = {
                                     error: "Requested action failed. Database could not be reached."
                                 };
@@ -237,13 +228,13 @@ exports.show = function(request, response) {
                                 }
 
 
-                                log.info({Function: "Poll.Result"}, "Fetched Poll Results. Poll Id: " + request.params.id);
+                                log.info({Function: "SurveyResult.Create"}, "Fetched Survey Poll Results. Poll Id: " + request.params.id);
                                 return response.status(200).json(jsonOutput);
                             }
                         });
                     }
                     else {
-                        log.info({Function: "Poll.Result"}, "Requested Poll Result Not Found");
+                        log.info({Function: "SurveyResult.Create"}, "Requested Survey Poll Result Not Found");
                         return response.sendStatus(404);
                     }
                 }
@@ -254,7 +245,7 @@ exports.show = function(request, response) {
         json = {
             error: "Error: " + error.message
         };
-        log.error(error, "Exception Occurred (Function = Poll.Result)");
+        log.error(error, "Exception Occurred (Function = SurveyResult.Create)");
         return response.status(500).json(json);
     }
 };

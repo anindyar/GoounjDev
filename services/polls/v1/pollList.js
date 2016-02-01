@@ -54,18 +54,19 @@ var moment = require('moment');
  */
 
 /**
- * @api {post} /polls/v1/pollList Show polls for Audience
+ * @api {post} /poll/v1/pollList Show polls for Audience
  * @apiVersion 0.1.0
  * @apiName CreatePollList
  * @apiGroup Poll
  *
- * @apiParam {String} id Audience User Id.
- * @apiParam {String} limit Limit for number of polls.
- *
+ * @apiParam {Number} userId Audience User Id
+ * @apiParam {Number} lowerLimit Limit for number of polls.
+ * @apiParam {Number} upperLimit Limit for number of polls.
+ * @apiParam {Number} isAnswered is answered flag
  *
  * @apiParamExample {json} Request-Example:
  *     {
- *           "userId": "4",
+ *           "userId": 4,
  *           "lowerLimit": 1,
  *           "upperLimit": 10,
  *           "isAnswered": 2
@@ -78,7 +79,6 @@ var moment = require('moment');
  *     "id": 12,
  *     "start_date": "2015-10-23T05:22:22.000Z",
  *     "poll_id": 4,
- *     "is_skipped": 0,
  *     "is_boost": 0,
  *     "end_date": "2015-10-23T05:22:22.000Z",
  *     "user_id": 9,
@@ -87,10 +87,7 @@ var moment = require('moment');
  *     "poll_name": "Cinema",
  *     "is_answered": "0",
  *     "is_active": 1,
- *     "isGeneric": 1,
- *     "reward_type_id": 1,
- *     "visibility_type_id": 1,
- *     "poll_answered_time": null
+ *     "isGeneric": 1
  *     },
  *     {
  *     "id": 15,
@@ -105,10 +102,7 @@ var moment = require('moment');
  *     "poll_name": "Composer",
  *     "is_answered": "0",
  *     "is_active": 1,
- *     "isGeneric": 1,
- *     "reward_type_id": 1,
- *     "visibility_type_id": 1,
- *     "poll_answered_time": null
+ *     "isGeneric": 1
  *     }
  *     ]
  *
@@ -136,7 +130,7 @@ exports.create = function(request, response) {
                 var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
 
                 if(request.body.isAnswered == 2) {
-                    connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)); (SELECT * FROM polls WHERE isAnswered = 0 ORDER BY pollId DESC LIMIT ?, ?) UNION (SELECT * FROM polls WHERE isAnswered = 1 ORDER BY pollId DESC LIMIT ?, ?); ', [utcTimeStamp, request.body.userId, request.body.userId, request.body.lowerLimit, request.body.upperLimit,  request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
+                    connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)); (SELECT * FROM polls WHERE isAnswered = 0 AND isSurvey = 0 ORDER BY pollId DESC LIMIT ?, ?) UNION (SELECT * FROM polls WHERE isAnswered = 1 AND isSurvey = 0 ORDER BY pollId DESC LIMIT ?, ?); ', [utcTimeStamp, request.body.userId, request.body.userId, request.body.lowerLimit, request.body.upperLimit,  request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
                             json = {
@@ -145,18 +139,16 @@ exports.create = function(request, response) {
                             return response.status(500).json(json);
                         }
                         else if(result) {
-                            console.log(result);
                             var pollList = [], pollOBJ = {};
                             var resultList = result[1];
                             for(i = 0; i < resultList.length; i++) {
-                                //var startDate = resultList[i].startDate.toString();
-                                //var endDate = resultList[i].endDate.toString();
 
                                 pollOBJ = {
                                     pollId: resultList[i].pollId,
                                     startDate: resultList[i].startDate,
                                     endDate: resultList[i].endDate,
                                     pollName: resultList[i].pollName,
+                                    isSurvey: resultList[i].isSurvey,
                                     isBoost: resultList[i].isBoost,
                                     isGeneric: resultList[i].isGeneric,
                                     isActive: resultList[i].isActive,
@@ -175,7 +167,7 @@ exports.create = function(request, response) {
                     });
                 }
                 if(request.body.isAnswered == 0 || request.body.isAnswered == 1) {
-                    connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?));SELECT * FROM polls WHERE isAnswered = ? ORDER BY pollId DESC LIMIT ?, ?;',[utcTimeStamp, request.body.userId, request.body.userId, request.body.isAnswered, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
+                    connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)); SELECT * FROM polls WHERE isAnswered = ? AND isSurvey = 0 ORDER BY pollId DESC LIMIT ?, ?;',[utcTimeStamp, request.body.userId, request.body.userId, request.body.isAnswered, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.body.userId) + "(Function = PollList.Create)");
                             json = {
@@ -195,6 +187,7 @@ exports.create = function(request, response) {
                                     startDate: resultList[i].startDate,
                                     endDate: resultList[i].endDate,
                                     pollName: resultList[i].pollName,
+                                    isSurvey: resultList[i].isSurvey,
                                     isBoost: resultList[i].isBoost,
                                     isGeneric: resultList[i].isGeneric,
                                     isActive: resultList[i].isActive,
@@ -295,7 +288,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT * FROM poll WHERE created_user_id = ?', request.params.id, function(queryError, result) {
+            connection.query('SELECT * FROM poll WHERE created_user_id = ? AND is_survey = 0', request.params.id, function(queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.params.id) + "(Function = PollList.Create)");
                     json = {

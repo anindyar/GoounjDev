@@ -7,3 +7,7 @@ ADD CONSTRAINT `fk_answer_poll1`
   REFERENCES `goounj`.`poll` (`id`)
   ON DELETE NO ACTION
   ON UPDATE NO ACTION;
+
+
+ALTER TABLE `goounj`.`poll`
+ADD COLUMN `is_survey` TINYINT(1) UNSIGNED NULL DEFAULT '0' AFTER `is_generic`;
