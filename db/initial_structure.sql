@@ -7,11 +7,10 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schema goounj
 -- -----------------------------------------------------
-
+DROP SCHEMA IF EXISTS `goounj`;
 -- -----------------------------------------------------
 -- Schema goounj
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `goounj`;
 CREATE SCHEMA IF NOT EXISTS `goounj` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `goounj` ;
 
@@ -126,6 +125,7 @@ CREATE TABLE IF NOT EXISTS `goounj`.`poll` (
   `poll_type_id` INT NOT NULL,
   `is_active` TINYINT(1) UNSIGNED NULL DEFAULT '1',
   `is_generic` TINYINT(1) UNSIGNED NULL DEFAULT '0',
+  `is_survey` TINYINT(1) UNSIGNED NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   INDEX `fk_poll_visibility_type1_idx` (`visibility_type_id` ASC),
   INDEX `fk_poll_reward_type1_idx` (`reward_type_id` ASC),
@@ -296,10 +296,12 @@ CREATE TABLE IF NOT EXISTS `goounj`.`answer` (
   `question_id` INT NOT NULL,
   `question_options_id` INT NOT NULL,
   `user_id` INT NOT NULL,
+  `poll_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_answer_question1_idx` (`question_id` ASC),
   INDEX `fk_answer_question_options1_idx` (`question_options_id` ASC),
   INDEX `fk_answer_user1_idx` (`user_id` ASC),
+  INDEX `fk_answer_poll1_idx` (`poll_id` ASC),
   CONSTRAINT `fk_answer_question1`
     FOREIGN KEY (`question_id`)
     REFERENCES `goounj`.`question` (`id`)
@@ -313,6 +315,11 @@ CREATE TABLE IF NOT EXISTS `goounj`.`answer` (
   CONSTRAINT `fk_answer_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_answer_poll1`
+    FOREIGN KEY (`poll_id`)
+    REFERENCES `goounj`.`poll` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
