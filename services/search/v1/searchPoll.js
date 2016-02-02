@@ -44,7 +44,7 @@ exports.create = function(request, response){
                     return response.status(500).json(json);
                 }
                 var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
-                connection.query('CREATE OR REPLACE VIEW search AS (SELECT DISTINCT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_answered AS isAnswered, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, created_user_id AS createdUserId, name AS createdUserName  FROM audience_poll_map INNER JOIN poll ON audience_poll_map.poll_id = poll.id INNER JOIN user ON poll.created_user_id = user.id  WHERE  audience_poll_map.user_id = ?) UNION (SELECT DISTINCT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, 0 AS isAnswered, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, created_user_id AS createdUserId, name AS createdUserName FROM user INNER JOIN poll ON poll.created_user_id = user.id WHERE poll.created_user_id = ?); SELECT * FROM search WHERE endDate > ? AND isSurvey = 0 AND pollName LIKE ? ORDER BY pollId DESC;', [request.body.userId, request.body.userId, utcTimeStamp, '%' + request.body.searchString + '%'], function(queryError, result) {
+                connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)); CREATE OR REPLACE VIEW mine AS (SELECT * FROM polls) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "2" AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE created_user_id = ?); SELECT * FROM mine WHERE isSurvey = 0 AND pollName LIKE ? ORDER BY pollId DESC', [utcTimeStamp, request.body.userId, request.body.userId,  request.body.userId, '%' + request.body.searchString + '%'], function(queryError, result) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to fetch survey list. Details " + JSON.stringify(request.body.userId) + "(Function = searchPoll.Create)");
                         json = {
@@ -52,9 +52,9 @@ exports.create = function(request, response){
                         };
                         return response.status(500).json(json);
                     }
-                    if(result[1]) {
+                    if(result[2]) {
                         log.info({Function: "searchPoll.Create"}, "Search results fetched");
-                        return response.status(200).json(result[1]);
+                        return response.status(200).json(result[2]);
                     }
                     else {
                         log.info({Function: "searchPoll.Create"}, "Requested String not found.");
