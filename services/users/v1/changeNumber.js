@@ -32,7 +32,7 @@ var log = require('./../../../log');
 var otp = require('./../../../otp');
 
 exports.update = function(request, response) {
-    var json, jsonData = {};
+    var json;
     try {
         if(request.body.oldNumber != null && request.body.newNumber != null) {
 

@@ -228,12 +228,16 @@ exports.create = function(request, response) {
                                                 phoneList.push(list[t].phone);
                                             }
                                         }
+                                        if(tokenList.length != 0) {
+                                            pushNote.sendAndroidPush(tokenList, config.pushNotification.message);
+                                        }
 
-                                        pushNote.sendAndroidPush(tokenList, config.pushNotification.message);
                                         nonExistingUsers = nonExistingUsers.filter(function (element) {
                                             return phoneList.indexOf(element) < 0;
                                         });
-                                        sms.sendSMS(nonExistingUsers, config.sms.message);
+                                        if(nonExistingUsers.length != 0) {
+                                            sms.sendSMS(nonExistingUsers, config.sms.message);
+                                        }
                                     }
                                 });
                             }

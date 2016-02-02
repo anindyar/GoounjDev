@@ -236,7 +236,6 @@ exports.show = function(request, response) {
                                     questions[i].totalCount = totalCount;
                                 }
 
-
                                 log.info({Function: "Poll.Result"}, "Fetched Poll Results. Poll Id: " + request.params.id);
                                 return response.status(200).json(jsonOutput);
                             }
