@@ -70,18 +70,3 @@ INSERT INTO `goounj`.`category` (`name`) VALUES ('Others');
 --
 INSERT INTO `user` VALUES (1,'Goounj Bvocal','admin@bvocal.in','1234567890',NULL,'cfb84fad6d3f906872a2a7eba8e7a23acdfc3daee02ccf94f2360384879464de','9b454de447e83dd75b338254d5b7d415034d2565528b2b874f3aa6000cad3dfc114a12a932bd44000699da8369297d7b96ab08f82f25ead2313d75dcd1156675',NULL,NULL,'2015-10-31 02:25:17','2015-10-31 02:25:17','2015-10-31 02:25:17',1,'3436',1,1,'India','Chennai',91,'1234567890','de123vice123tok123en','Android','4.4', '1');
 
---
--- Dumping data for poll
---
-LOCK TABLES `poll` WRITE;
-INSERT INTO `poll` VALUES (1,'2015-10-31 09:16:02','2018-10-31 09:16:02','Best Footballer',0,1,1,1,1,1,1);
-UNLOCK TABLES;
-LOCK TABLES `question` WRITE;
-INSERT INTO `question` VALUES (1,'Who is the best footballer?',1,1),(2,'Who is the top goal scorer?',1,1);
-UNLOCK TABLES;
-LOCK TABLES `question_options` WRITE;
-INSERT INTO `question_options` VALUES (1,'Messi',1),(2,'Ronaldo',1),(3,'Ibrahimovic',1),(4,'Messi',2),(5,'Ronaldo',2),(6,'Lewandoski',2);
-UNLOCK TABLES;
-LOCK TABLES `category_poll_map` WRITE;
-INSERT INTO `goounj`.`category_poll_map` (`poll_id`, `category_id`) VALUES ('1', '4');
-UNLOCK TABLES;
