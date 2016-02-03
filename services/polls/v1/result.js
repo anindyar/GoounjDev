@@ -242,8 +242,11 @@ exports.show = function(request, response) {
                         });
                     }
                     else {
+                        json = {
+                            error: "No Results for the requested poll!"
+                        };
                         log.info({Function: "Poll.Result"}, "Requested Poll Result Not Found");
-                        return response.sendStatus(404);
+                        return response.status(404).json(json);
                     }
                 }
             });
