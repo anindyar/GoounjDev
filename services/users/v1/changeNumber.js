@@ -103,7 +103,7 @@ exports.update = function(request, response) {
             });
         }
         else {
-            json ={
+            json = {
                 error: "oldNumber and newNumber are required."
             };
             log.error({Function: "ChangeNumber.Create"}, "oldNumber and newNumber are required");

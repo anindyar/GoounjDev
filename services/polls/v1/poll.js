@@ -121,10 +121,13 @@ exports.create = function(request, response) {
     var json;
     try {
         if((request.body.pollName != null)  && (request.body.questionList != null) && (request.body.category != null)) {
-            var updatedAudienceList = request.body.audience;
-            for (var k = 0; k < updatedAudienceList.length; k++) {
-                updatedAudienceList[k] = updatedAudienceList[k].replace(/\s+/g, '').substr(-10);
+            if(request.body.audience != null && request.body.audience.length != null) {
+                var updatedAudienceList = request.body.audience;
+                for (var k = 0; k < updatedAudienceList.length; k++) {
+                    updatedAudienceList[k] = updatedAudienceList[k].replace(/\s+/g, '').substr(-10);
+                }
             }
+
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = Poll.Create)");
