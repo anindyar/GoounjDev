@@ -204,7 +204,6 @@ exports.create = function(request, response) {
                                         var kCopy = k;
                                         var number = updatedAudienceList[kCopy];
                                         connection.query('CALL setAudienceForPoll(?, ?);', [number, pollID], function (queryError, user) {
-
                                             if (queryError != null) {
                                                 log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
                                                 jsn = {
@@ -474,6 +473,28 @@ exports.show = function(request, response) {
 exports.update = function(request, response) {
     var json;
     try {
+        if(request.body.pollName != null || request.body.questionList != null || request.body.isBoost != null || request.body.visibilityType != null || request.body.rewardType != null || request.body.category != null || request.body.pollType != null) {
+            json = {
+                error: "Poll update failed. Parameters other than audienceList cannot be updated."
+            };
+            log.info({Function: "Poll.Update"}, "Poll updated unsuccessfully. Poll ID: " + request.params.id);
+            return response.status(400).json(json);
+        }
+        if(request.body.audience == null) {
+            json = {
+                error: "Poll update failed. Audience is empty."
+            };
+            log.info({Function: "Poll.Update"}, "Poll updated unsuccessfully. Poll ID: " + request.params.id);
+            return response.status(400).json(json);
+        }
+        if(request.body.audience != null && request.body.audience.length != null) {
+            var audienceList = request.body.audience;
+            for (var k = 0; k < audienceList.length; k++) {
+                audienceList[k] = audienceList[k].replace(/\s+/g, '').substr(-10);
+            }
+        }
+        var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
+
         request.getConnection(function (connectionError, connection) {
             if (connectionError != null) {
                 log.error(connectionError, "Database Connection Error (Function = Poll.Update)");
@@ -482,7 +503,7 @@ exports.update = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('UPDATE '+ config.mysql.db.name + '.poll SET is_active = ? WHERE id = ?', request.body.isActive, function(queryError, result) {
+            connection.query('SELECT phone FROM poll JOIN audience_poll_map ON poll.id = poll_id JOIN user ON user.id = user_id WHERE poll.id = ? AND is_generic = 0 AND is_survey = 0 AND end_date > ?', [request.params.id, utcTimeStamp], function(queryError, check) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Update poll details. Poll ID: " + request.params.id + " (Function = Poll.Update)");
                     json = {
@@ -490,18 +511,92 @@ exports.update = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
+                else if(check) {
+                    var numbers = [];
+                    for(i = 0; i < check.length; i++) {
+                        numbers.push(check[i].phone);
+                    }
+                    audienceList = audienceList.filter(function(element) {
+                        return numbers.indexOf(element) < 0;
+                    });
+
+                    if(request.body.audience != null && request.body.audience.length != null) {
+                        var tokenList = [], phoneList = [], nonExistingUsers = audienceList;
+                        for (var k = 0; k < audienceList.length; k++) {
+                            (function () {
+                                var kCopy = k;
+                                var number = audienceList[kCopy];
+                                connection.query('CALL setAudienceForPoll(?, ?);', [number, request.params.id], function (queryError, user) {
+                                    if (queryError != null) {
+                                        log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                        jsn = {
+                                            error: "Requested action failed. Database could not be reached."
+                                        };
+                                        return response.status(500).json(json);
+                                    }
+                                });
+                            }());
+                        }
+
+                        connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', audienceList, function (queryError, list) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to create a new poll. (Function= Poll.Update)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                            if (list) {
+                                for (var t = 0; t < list.length; t++) {
+                                    if (list[t].device_token != null) {
+                                        tokenList.push(list[t].device_token);
+                                        phoneList.push(list[t].phone);
+                                    }
+                                }
+                                if(tokenList.length != 0) {
+                                    pushNote.sendAndroidPush(tokenList, config.pushNotification.message);
+                                }
+
+                                nonExistingUsers = nonExistingUsers.filter(function (element) {
+                                    return phoneList.indexOf(element) < 0;
+                                });
+                                if(nonExistingUsers.length != 0) {
+                                    sms.sendSMS(nonExistingUsers, config.sms.message);
+                                }
+                                log.info({Function: "Poll.Update"}, "poll Updated Successfully. Poll Id: " + request.params.id);
+                                return response.sendStatus(200);
+                            }
+                        });
+                    }
+                }
                 else {
-                    log.info({Function: "Poll.Update"}, "poll Updated Successfully. Poll Id: " + request.params.id);
-                    return response.sendStatus(200);
+                    log.info({Function: "Poll.Update"}, "Poll not found. Poll Id: " + request.params.id);
+                    return response.sendStatus(404);
                 }
             });
+
+            if(request.body.isActive != null) {
+                connection.query('UPDATE '+ config.mysql.db.name + '.poll SET is_active = ? WHERE id = ?', [request.body.isActive, request.params.id], function(queryError, result) {
+                    if (queryError != null) {
+                        log.error(queryError, "Query Error. Failed To Update poll details. Poll ID: " + request.params.id + " (Function = Poll.Update)");
+                        json = {
+                            error: "Requested Action Failed. Database could not be reached."
+                        };
+                        return response.status(500).json(json);
+                    }
+                    else {
+                        log.info({Function: "Poll.Update"}, "poll Updated Successfully. Poll Id: " + request.params.id);
+                        return response.sendStatus(200);
+                    }
+                });
+            }
         });
     }
     catch(error) {
         json = {
             error: "Error: " + error.message
         };
-        log.error(error, "Exception Occurred (Function = PollList.Create)");
+        log.error(error, "Exception Occurred (Function = Poll.Create)");
         return response.status(500).json(json);
     }
 };
