@@ -187,7 +187,7 @@ exports.create = function(request, response) {
                                 }
                             });
 
-                            log.info({Function: "Poll.Create"}, "New survey poll created successfully. Poll ID: " + pollID);
+                            log.info({Function: "Survey.Create"}, "New survey poll created successfully. Poll ID: " + pollID);
                             return response.sendStatus(200);
                         }
                     });
