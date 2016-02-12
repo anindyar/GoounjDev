@@ -115,13 +115,19 @@ exports.create = function(request, response) {
                                 });
                             }
                             else {
+                                json = {
+                                    error: "AuthCode mismatch"
+                                };
                                 log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                                return response.sendStatus(401);
+                                return response.status(401).json(json);
                             }
                         }
                         else {
+                            json = {
+                                error: "UserId, authCode mismatch"
+                            };
                             log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                            return response.sendStatus(401);
+                            return response.status(401).json(json);
                         }
                     });
 
