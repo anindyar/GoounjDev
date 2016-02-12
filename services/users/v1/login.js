@@ -31,7 +31,53 @@ var crypto = require('crypto');
 var config = require('./../../../config');
 var log = require('./../../../log');
 
-exports.create = function(request, response) {
+
+/**
+ * @apiDefine UserUnauthorisedError
+ *
+ * @apiError UserNotFound The requested user is unauthorised.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 401 Unauthorised
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /users/v1/login Create User
+ * @apiVersion 0.1.0
+ * @apiName LoginUser
+ * @apiGroup User
+ *
+ * @apiParam {String} country User's country name.
+ * @apiParam {String} city User's city name.
+ * @apiParam {String} phone User's phone number.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *           "country": "India",
+ *           "city": "Chennai",
+ *           "phone": "9991234567"
+ *      }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ */
+
+ exports.create = function(request, response) {
 
     try {
         if (request.body.country == null) {

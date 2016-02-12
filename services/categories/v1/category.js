@@ -30,6 +30,48 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 
+/**
+ * @apiDefine CategoryNotFoundError
+ *
+ * @apiError CategoryNotFound The requested category was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /categories/v1/category Create category
+ * @apiVersion 0.1.0
+ * @apiName Create Category
+ * @apiGroup Category
+ *
+ *
+ *
+ * @apiParamExample {json} Request-Example:
+ *    {
+ *      "category": "general"
+ *    }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ *
+ */
+
 exports.create = function(request, response) {
     var json;
     try{
@@ -91,6 +133,49 @@ exports.create = function(request, response) {
         return response.status(500).json(json);
     }
 };
+
+
+/**
+ * @api {put} /categories/v1/category/:id Update category
+ * @apiVersion 0.1.0
+ * @apiName Update Category
+ * @apiGroup Category
+ *
+ * @apiParam {String} id Category Id.
+ *
+ * @apiParamExample {json} Request-Example:
+ *    {
+ *      "category": "general"
+ *    }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *  {
+ *      "id": 1,
+ *      "name": "general"
+ *  }
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CategoryNotFoundError
+ *
+ * @apiUse CategoryAlreadyExistsError
+ */
+
+/**
+ * @apiDefine CategoryAlreadyExistsError
+ *
+ * @apiError CategoryAlreadyExists The requested category name already exists under another id.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *          error: "Category already exists!"
+ *     }
+ *
+ */
+
 
 exports.update = function(request, response) {
     var json;
@@ -180,6 +265,34 @@ exports.update = function(request, response) {
     }
 };
 
+
+/**
+ * @api {get} /categories/v1/category Index categories
+ * @apiVersion 0.1.0
+ * @apiName Index Category
+ * @apiGroup Category
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *       {
+ *       "id": 1,
+ *       "name": "general"
+ *       },
+ *       {
+ *       "id": 2,
+ *       "name": "sports"
+ *       }
+ *    ]
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CategoryNotFoundError
+ *
+ */
+
 exports.index = function(request, response) {
     var json;
     try {
@@ -220,6 +333,26 @@ exports.index = function(request, response) {
         return response.status(500).json(json);
     }
 };
+
+
+/**
+ * @api {delete} /categories/v1/category/:id Delete category
+ * @apiVersion 0.1.0
+ * @apiName Delete Category
+ * @apiGroup Category
+ *
+ * @apiParam {String} id Category Id.
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CategoryNotFoundError
+ *
+ */
 
 exports["delete"] = function(request, response) {
     var json;

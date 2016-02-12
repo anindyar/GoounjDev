@@ -30,6 +30,45 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 
+/**
+ * @apiDefine UserNotFoundError
+ *
+ * @apiError UserNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {put} users/v1/logout/:id Logout User
+ * @apiVersion 0.1.0
+ * @apiName LogoutUser
+ * @apiGroup User
+ *
+ * @apiParam {Number} id User's unique ID.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse UserNotFoundError
+ *
+ */
+
 exports.update = function(request, response) {
     var json;
     try {
@@ -54,7 +93,7 @@ exports.update = function(request, response) {
                     jsonData['is_verified'] = 0;
                     jsonData['device_token'] = null;
 
-                    connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? WHERE id = ?', [jsonData,request.params.id], function(queryError, item) {
+                    connection.query('UPDATE '+ config.mysql.db.name +'.user SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, item) {
                         if (queryError != null) {
                             log.error(queryError, "Query Error. Failed To Update User Details. User ID: " + request.params.id + " (Function = Logout.Update)");
                             json = {

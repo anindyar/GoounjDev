@@ -57,7 +57,7 @@ var moment = require('moment');
  */
 
 /**
- * @api {post} /users/v1/user Create User/Login
+ * @api {post} /users/v1/user Create User
  * @apiVersion 0.1.0
  * @apiName CreateUser
  * @apiGroup User
@@ -70,7 +70,8 @@ var moment = require('moment');
  *     {
  *           "country": "India",
  *           "city": "Chennai",
- *           "phone": "9991234567"
+ *           "phone": "9991234567",
+ *           "name": "Kennet"
  *      }
  *
  * @apiSuccessExample Success-Response:
@@ -356,7 +357,6 @@ exports.index = function(request, response) {
  *         "country": "India",
  *         "country_code": 91,
  *         "city": "Chennai",
- *         "last_name": "Doe",
  *         "is_verified": 1,
  *         "secret_key": "35126696ab4cd2eb09ec0f65c42aa6d8fb404033175244da209e89551e4890b38c43bb5941ece6fa7ce7bc835a0e68d696b4be0346fabefccb3a4f92c90c3170",
  *         "id": 3,
@@ -369,7 +369,7 @@ exports.index = function(request, response) {
  *         "role_id": 1,
  *         "password": null,
  *         "updated_time": "2015-10-12T19:51:41.000Z",
- *         "first_name": "John",
+ *         "name": "John",
  *         "public_key": "144150e9404af9bb6b3fb7a480e2c122bd0af209235c6a673b7a33a62d58f293"
  *       }
  *
@@ -424,8 +424,7 @@ exports.show = function(request, response) {
  * @apiGroup User
  *
  * @apiParam {Number} id User's unique ID.
- * @apiParam {String} fname User's first name.
- * @apiParam {String} lname User's last name.
+ * @apiParam {String} name User's name.
  * @apiParam {String} email User's email.
  * @apiParam {String} phone User's phone number.
  * @apiParam {String} country User's country name.
@@ -433,8 +432,7 @@ exports.show = function(request, response) {
  *
  * @apiParamExample {json} Request-Example:
  *    {
- *        "fname": "John",
- *        "lname": "Doe",
+ *        "name": "John"
  *        "email": "johndoe@gmail.com",
  *        "phone": "9991234567",
  *        "country": "India",
@@ -449,7 +447,6 @@ exports.show = function(request, response) {
  *         "country": "India",
  *         "country_code": 91,
  *         "city": "Chennai",
- *         "last_name": "Doe",
  *         "is_verified": 1,
  *         "secret_key": "35126696ab4cd2eb09ec0f65c42aa6d8fb404033175244da209e89551e4890b38c43bb5941ece6fa7ce7bc835a0e68d696b4be0346fabefccb3a4f92c90c3170",
  *         "id": 3,
@@ -462,7 +459,7 @@ exports.show = function(request, response) {
  *         "role_id": 1,
  *         "password": null,
  *         "updated_time": "2015-10-12T19:51:41.000Z",
- *         "first_name": "John",
+ *         "name": "John",
  *         "public_key": "144150e9404af9bb6b3fb7a480e2c122bd0af209235c6a673b7a33a62d58f293"
  *       }
  *

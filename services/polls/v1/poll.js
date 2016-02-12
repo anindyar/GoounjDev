@@ -342,48 +342,48 @@ exports["delete"] = function(request, response) {
  *     "pollType": "opinion",
  *     "rewardType": "free",
  *     "questionList": [
- *     {
- *     "questionType": "text",
- *     "questionId": 9,
- *     "question": "Who is the best striker?",
- *     "choices": [
- *     {
- *     "optionId": 22,
- *     "choice": "Messi"
- *     },
- *     {
- *     "optionId": 23,
- *     "choice": "Ronaldo"
- *     },
- *     {
- *     "optionId": 24,
- *     "choice": "Suarez"
- *     }
- *     ]
- *     },
- *     {
- *     "questionType": "text",
- *     "questionId": 9,
- *     "question": "Who is the top goal scorer?",
- *     "choices": [
- *     {
- *     "optionId": 25,
- *     "choice": "Messi"
- *     },
- *     {
- *     "optionId": 26,
- *     "choice": "Ronaldo"
- *     },
- *     {
- *     "optionId": 27,
- *     "choice": "Suarez"
- *     }
- *     ]
- *     }
- *     ],
- *     "pollName": "Best Footballer",
- *     "createdUserId": 2
- *
+ *                      {
+ *                      "questionType": "text",
+ *                      "questionId": 9,
+ *                      "question": "Who is the best striker?",
+ *                      "choices": [
+ *                                  {
+ *                                  "optionId": 22,
+ *                                  "choice": "Messi"
+ *                                  },
+ *                                  {
+ *                                  "optionId": 23,
+ *                                  "choice": "Ronaldo"
+ *                                   },
+ *                                  {
+ *                                  "optionId": 24,
+ *                                  "choice": "Suarez"
+ *                                  }
+ *                               ]
+ *                      },
+ *                      {
+ *                      "questionType": "text",
+ *                      "questionId": 9,
+ *                      "question": "Who is the top goal scorer?",
+ *                      "choices": [
+ *                                  {
+ *                                  "optionId": 25,
+ *                                  "choice": "Messi"
+ *                                  },
+ *                                  {
+ *                                  "optionId": 26,
+ *                                  "choice": "Ronaldo"
+ *                                  },
+ *                                  {
+ *                                  "optionId": 27,
+ *                                  "choice": "Suarez"
+ *                                  }
+ *                                ]
+ *                      }
+ *                    ],
+ *                  "pollName": "Best Footballer",
+ *                  "createdUserId": 2
+ *  }
  *
  *
  * @apiUse DatabaseError
@@ -469,6 +469,32 @@ exports.show = function(request, response) {
     }
 };
 
+
+/**
+ * @api {put} /polls/v1/poll/:id Update poll
+ * @apiVersion 0.1.0
+ * @apiName Update Poll
+ * @apiGroup Poll
+ *
+ *
+ *
+ * @apiParamExample {json} Request-Example:
+ *    {
+ *      "audience": [
+ *          "9994012253",
+ *          "9944377754",
+ *          "9443797732"
+ *          ]
+ *    }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse PollNotFoundError
+ *
+ */
 
 exports.update = function(request, response) {
     var json;

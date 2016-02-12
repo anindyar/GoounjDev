@@ -393,6 +393,7 @@ CREATE TABLE IF NOT EXISTS `goounj`.`association` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `admin_id` INT NOT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   INDEX `fk_association_user1_idx` (`admin_id` ASC),
   CONSTRAINT `fk_association_user1`
@@ -470,7 +471,7 @@ CREATE TABLE IF NOT EXISTS `goounj`.`candidate` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `election_id` INT NOT NULL,
-  `is_accepted` TINYINT(1) NULL DEFAULT 0,
+  `is_active` TINYINT(1) NULL DEFAULT 0,
   `name` VARCHAR(45) NULL,
   `nick_name` VARCHAR(45) NULL,
   `about` VARCHAR(150) NULL,

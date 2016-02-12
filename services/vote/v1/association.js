@@ -57,13 +57,13 @@ var log = require('./../../../log');
  * @apiName CreateAssociation
  * @apiGroup Vote
  *
- * @apiParam {String} associationName User's country name.
- * @apiParam {String} associationAdminId User's city name.
+ * @apiParam {String} associationName Association name.
+ * @apiParam {String} associationAdminId Association Id.
  *
  * @apiParamExample {json} Request-Example:
  *     {
  *      "associationName": "Orgware",
- *      "associationAdminId": "1"
+ *      "associationAdminId": "2"
  *     }
  *
  * @apiSuccessExample Success-Response:
@@ -149,6 +149,31 @@ exports.create = function(request, response) {
 };
 
 
+/**
+ * @api {put} /vote/v1/association/:id Update Association
+ * @apiVersion 0.1.0
+ * @apiName UpdateAssociation
+ * @apiGroup Vote
+ *
+ * @apiParam {String} associationName Association name.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *      "associationName": "Orgware Technologies"
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "id": 1,
+ *       "name": "Orgware Technologies",
+ *       "admin_id": 1
+ *     }
+ *
+ * @apiUse DatabaseError
+ *
+ *
+ */
 
 exports.update = function(request, response) {
     var json;
@@ -252,6 +277,31 @@ exports.update = function(request, response) {
 };
 
 
+/**
+ * @api {get} /vote/v1/association Index Association
+ * @apiVersion 0.1.0
+ * @apiName IndexAssociation
+ * @apiGroup Vote
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *      {
+ *        "name": "Orgware Technologies",
+ *        "is_active": 1
+ *      },
+ *      {
+ *        "name": "Devs",
+ *        "is_active": 1
+ *      }
+ *    ]
+ *
+ * @apiUse DatabaseError
+ *
+ *
+ */
+
 exports.index = function(request, response) {
     var json;
     try {
@@ -294,6 +344,29 @@ exports.index = function(request, response) {
 };
 
 
+/**
+ * @api {get} /vote/v1/association/:id Show Association
+ * @apiVersion 0.1.0
+ * @apiName ShowAssociation
+ * @apiGroup Vote
+ *
+ * @apiParam {Number} associationId Association Id.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *      {
+ *        "memberTotal": 1,
+ *        "name": "Orgware Technologies",
+ *        "associationAdminId": 1,
+ *        "associationAdminName": "Goounj Bvocal"
+ *      }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
+
 exports.show = function(request, response) {
     var json;
     try {
@@ -305,7 +378,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdmin,  association_user_map.user_id AS members FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ? AND is_active = ?', [request.params.id, "1"], function(queryError, result) {
+            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdminId, (SELECT name FROM user WHERE id = association.admin_id) AS associationAdminName,  COUNT(association_user_map.user_id) AS memberTotal FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ? AND is_active = ?', [request.params.id, "1"], function(queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Show an Association. Association ID: " + request.params.id + " (Function = Association.Show)");
                     json = {
@@ -334,6 +407,23 @@ exports.show = function(request, response) {
 };
 
 
+/**
+ * @api {delete} /vote/v1/association/:id Delete Association
+ * @apiVersion 0.1.0
+ * @apiName DeleteAssociation
+ * @apiGroup Vote
+ *
+ * @apiParam {Number} associationId Association Id.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
+
 exports["delete"] = function(request, response) {
     var json;
     try {
@@ -358,7 +448,8 @@ exports["delete"] = function(request, response) {
                     if (result.affectedRows != 0) {
                         log.info({Function: "Association.Delete"}, "Association Deleted Successfully. id: " + request.params.id);
                         return response.sendStatus(200);
-                    } else {
+                    }
+                    else {
                         log.info({Function: "Association.Delete"}, "Requested Association Not Found. Association ID: " + request.params.id );
                         return response.sendStatus(404);
                     }

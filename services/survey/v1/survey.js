@@ -207,18 +207,16 @@ exports.create = function(request, response) {
 
 
 /**
- * @api {delete} /survey/v1/survey/:id Delete poll
+ * @api {delete} /survey/v1/survey/:id Delete Survey
  * @apiVersion 0.1.0
  * @apiName Delete Survey
  * @apiGroup Survey
  *
- * @apiParam {String} id Poll Id.
+ * @apiParam {String} id Survey Poll Id.
  *
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *
- *
  *
  * @apiUse DatabaseError
  *
@@ -247,10 +245,10 @@ exports["delete"] = function(request, response) {
                     return response.status(500).json(json);
                 } else {
                     if (result.affectedRows != 0) {
-                        log.info({Function: "Survey.Delete"}, "Poll Deleted Successfully. Poll ID: " + request.params.id);
+                        log.info({Function: "Survey.Delete"}, "Survey Deleted Successfully. Poll ID: " + request.params.id);
                         return response.sendStatus(200);
                     } else {
-                        log.info({Function: "Survey.Delete"}, "Requested Poll Not Found. Poll ID: " + request.params.id );
+                        log.info({Function: "Survey.Delete"}, "Requested survey poll not found. Poll ID: " + request.params.id );
                         return response.sendStatus(404);
                     }
                 }
@@ -287,48 +285,48 @@ exports["delete"] = function(request, response) {
  *     "rewardType": "free",
  *     "isSurvey": "1",
  *     "questionList": [
- *     {
- *     "questionType": "text",
- *     "questionId": 9,
- *     "question": "Who is the best striker?",
- *     "choices": [
- *     {
- *     "optionId": 22,
- *     "choice": "Messi"
- *     },
- *     {
- *     "optionId": 23,
- *     "choice": "Ronaldo"
- *     },
- *     {
- *     "optionId": 24,
- *     "choice": "Suarez"
- *     }
- *     ]
- *     },
- *     {
- *     "questionType": "text",
- *     "questionId": 9,
- *     "question": "Who is the top goal scorer?",
- *     "choices": [
- *     {
- *     "optionId": 25,
- *     "choice": "Messi"
- *     },
- *     {
- *     "optionId": 26,
- *     "choice": "Ronaldo"
- *     },
- *     {
- *     "optionId": 27,
- *     "choice": "Suarez"
- *     }
- *     ]
- *     }
+ *              {
+ *              "questionType": "text",
+ *              "questionId": 9,
+ *              "question": "Who is the best striker?",
+ *              "choices": [
+ *                      {
+ *                      "optionId": 22,
+ *                      "choice": "Messi"
+ *                      },
+ *                      {
+ *                      "optionId": 23,
+ *                      "choice": "Ronaldo"
+ *                      },
+ *                      {
+ *                      "optionId": 24,
+ *                      "choice": "Suarez"
+ *                      }
+ *                  ]
+ *              },
+ *              {
+ *              "questionType": "text",
+ *              "questionId": 9,
+ *              "question": "Who is the top goal scorer?",
+ *              "choices": [
+ *                      {
+ *                      "optionId": 25,
+ *                      "choice": "Messi"
+ *                      },
+ *                      {
+ *                      "optionId": 26,
+ *                      "choice": "Ronaldo"
+ *                      },
+ *                      {
+ *                      "optionId": 27,
+ *                      "choice": "Suarez"
+ *                      }
+ *                  ]
+ *              }
  *     ],
  *     "pollName": "Best Footballer",
  *     "createdUserId": 2
- *
+ *  }
  *
  *
  * @apiUse DatabaseError
@@ -353,7 +351,7 @@ exports.show = function(request, response) {
 
             connection.query('SELECT poll.poll_name AS pollName, is_survey AS isSurvey, poll.is_boost AS isBoost, (SELECT type FROM poll_type WHERE id = poll.poll_type_id) AS pollType, (SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, (SELECT type FROM visibility_type WHERE id = poll.visibility_type_id) AS visibilityType, (SELECT type FROM reward_type WHERE id = poll.reward_type_id) AS rewardType, poll.created_user_id AS createdUserId, (SELECT name FROM user WHERE id = poll.created_user_id) AS createdUser, question.question, question.id AS questionId, (SELECT type FROM question_type WHERE id = question.question_type_id) AS questionType, question_options.`option` AS choices, question_options.id AS optionId FROM user INNER JOIN poll ON poll.created_user_id = user.id INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, resultSet) {
                 if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to fetch poll details. Poll ID: " + JSON.stringify(request.params.id) + "(Function= Poll Show)");
+                    log.error(queryError, "Query error. Failed to fetch survey poll details. Survey ID: " + JSON.stringify(request.params.id) + "(Function= Poll Show)");
                     json = {
                         error: "Requested action failed. Database could not be reached."
                     };

@@ -30,6 +30,69 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 
+/**
+ * @apiDefine UserNotFoundError
+ *
+ * @apiError UserNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {get} users/v1/user/:id Show User Timeline
+ * @apiVersion 0.1.0
+ * @apiName ShowUserTimeline
+ * @apiGroup User
+ *
+ * @apiParam {Number} id User's unique ID.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *      [
+ *          {
+ *            "userName": "Kennet",
+ *            "pollId": 648,
+ *            "pollName": "Best Singer",
+ *            "createdUser": "Kennet",
+ *            "date": "2016-02-02T08:39:08.000Z"
+ *          },
+ *          {
+ *            "userName": "Kennet",
+ *            "pollId": 649,
+ *            "pollName": "Best Actor",
+ *            "createdUser": "Kennet",
+ *            "date": "2016-02-02T08:43:29.000Z"
+ *          },
+ *          {
+ *            "userName": "Kennet",
+ *            "pollId": 650,
+ *            "pollName": "Best Actress",
+ *            "createdUser": "Kennet",
+ *            "date": "2016-02-02T08:49:15.000Z"
+ *          }
+ *      ]
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse UserNotFoundError
+ *
+ */
+
+
+
 exports.show = function(request, response) {
     var json;
     try {

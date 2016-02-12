@@ -54,7 +54,7 @@ var moment = require('moment');
  */
 
 /**
- * @api {post} /survey/v1/surveyList Show polls for Audience
+ * @api {post} /survey/v1/surveyList List surveys for Audience User
  * @apiVersion 0.1.0
  * @apiName CreateSurveyList
  * @apiGroup Survey
@@ -175,7 +175,7 @@ exports.create = function(request, response) {
 
 
 /**
- * @api {get} /survey/v1/surveyList/:id Show survey polls for Created User
+ * @api {get} /survey/v1/surveyList/:id List surveys for Created User
  * @apiVersion 0.1.0
  * @apiName ShowSurveyList
  * @apiGroup Survey

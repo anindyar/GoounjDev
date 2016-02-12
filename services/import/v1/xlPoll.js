@@ -34,6 +34,39 @@ var fs = require('fs');
 var moment = require('moment');
 
 
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /import/v1/xlPoll Import Polls
+ * @apiVersion 0.1.0
+ * @apiName Import Polls
+ * @apiGroup Import
+ *
+ *
+ *
+ * @apiParamExample {json} Request-Example:
+ *    {
+ *    "createdUserId": "1"
+ *    }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ *
+ */
+
 exports.create = function(request, response) {
     var json, jsonOutput;
     var obj = xlsx.parse(fs.readFileSync('goounj_poll_sheet.xlsx'));

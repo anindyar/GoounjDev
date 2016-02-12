@@ -43,18 +43,18 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
 
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association WHERE id = ?', request.params.id, function(queryError, item) {
+                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association WHERE id = ?', request.body.associationId, function(queryError, item) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Invite.Create)");
                         json  = {
-                            error: "Query error. Failed to create new association."
+                            error: "Query error. Failed to invite new association."
                         };
                         return response.status(500).json(json);
                     }
                     if(item) {
                         var memberList = request.body.members;
                         for(i = 0; i < memberList.length; i++) {
-                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT user_id FROM '+ config.mysql.db.name +'.user WHERE first_name = ? AND last_name = ?) AND association_id = ?', [memberList[i].firstName, memberList[i].lastName, request.params.id], function(queryError, check) {
+                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT user_id FROM '+ config.mysql.db.name +'.user WHERE name = ?) AND association_id = ?', [memberList[i], request.body.associationid], function(queryError, check) {
                                 if(queryError != null) {
                                     log.error(queryError, "Query error. (Function: Invite.Create)");
                                     json  = {
@@ -109,7 +109,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT concat(first_name," ",last_name) AS members FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, list) {
+            connection.query('SELECT name AS members FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, list) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to create an election. (Function = Invite.Show)");
                     json = {

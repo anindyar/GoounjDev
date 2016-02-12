@@ -118,7 +118,7 @@ exports.show = function(request, response) {
                     return response.status(500).json(json);
                 }
                 if(check[0]) {
-                    connection.query('SELECT id AS candidateId, name AS candidateName, nick_name AS nickName, about, manifesto FROM '+ config.mysql.db.name +'.candidate WHERE election_id = ?', request.params.id, function(queryError, result) {
+                    connection.query('SELECT id AS candidateId, name AS candidateName, nick_name AS nickName, about, manifesto FROM '+ config.mysql.db.name +'.candidate WHERE election_id = ? AND is_active = 1', request.params.id, function(queryError, result) {
                         if(queryError != null) {
                             log.error(queryError, "Query error. (Function: CandidateList.Show)");
                             json  = {

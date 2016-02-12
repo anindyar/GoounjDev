@@ -31,6 +31,90 @@ var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
 
+/**
+ * @apiDefine PollNotFoundError
+ *
+ * @apiError PollNotFound There are no polls for the given string.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /search/v1/searchPoll Search Polls
+ * @apiVersion 0.1.0
+ * @apiName CreateSearchPoll
+ * @apiGroup Search
+ *
+ * @apiParam {Number} userId Audience User Id
+ * @apiParam {String} searchString String to be searched for.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *           "userId": 4,
+ *           "searchString": "bes"
+ *      }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *     {
+ *          "pollId": 653,
+ *          "isGeneric": 0,
+ *          "endDate": "2016-03-07T06:45:07.000Z",
+ *          "isSurvey": 0,
+ *          "startDate": "2016-02-08T06:45:07.000Z",
+ *          "isBoost": 0,
+ *          "isAnswered": "0",
+ *          "createdUserName": "hugh jackman",
+ *          "pollName": "Best Shopping mall",
+ *          "isActive": 1
+ *     },
+ *     {
+ *         "pollId": 651,
+ *         "isGeneric": 0,
+ *         "endDate": "2016-03-01T08:51:10.000Z",
+ *         "isSurvey": 0,
+ *         "startDate": "2016-02-02T08:51:10.000Z",
+ *         "isBoost": 0,
+ *         "isAnswered": "0",
+ *         "createdUserName": "Kennet",
+ *         "pollName": "Best Comedian",
+ *         "isActive": 1
+ *     },
+ *     {
+ *        "pollId": 650,
+ *        "isGeneric": 0,
+ *        "endDate": "2016-03-01T08:49:15.000Z",
+ *        "isSurvey": 0,
+ *        "startDate": "2016-02-02T08:49:15.000Z",
+ *        "isBoost": 0,
+ *        "isAnswered": "0",
+ *        "createdUserName": "Kennet",
+ *        "pollName": "Best Actress",
+ *        "isActive": 1
+ *     }
+ *   ]
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse PollNotFoundError
+ *
+ */
+
 exports.create = function(request, response){
     var json;
     try {

@@ -31,6 +31,72 @@ var config = require('./../../../config');
 var log = require('./../../../log');
 
 
+/**
+ * @apiDefine CandidateNotFoundError
+ *
+ * @apiError CandidateNotFound The requested candidate was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine ElectionNotFoundError
+ *
+ * @apiError ElectionNotFound The requested election was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/candidate Create Candidate
+ * @apiVersion 0.1.0
+ * @apiName CreateCandidate
+ * @apiGroup Vote
+ *
+ * @apiParam {String} userId Candidate's userId.
+ * @apiParam {String} electionId Election Id.
+ * @apiParam {String} userName Candidate's prefered user name.
+ * @apiParam {String} nickName Candidate's nick name.
+ * @apiParam {String} about Candidate's detail.
+ * @apiParam {String} manifesto Candidate's manifesto.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *         "userId": "2",
+ *         "electionId": "1",
+ *         "userName": "Catherine",
+ *         "nickName": "Kate",
+ *         "about": "JS developer",
+ *         "manifesto": "I will blah blah blah"
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "candidateId": 3
+ *      }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
+
 exports.create = function(request, response) {
     var json;
     try {
@@ -52,14 +118,14 @@ exports.create = function(request, response) {
                         return response.status(500).json(json);
                     }
                     if(candidates.length != 0) {
-                        if(candidates[0].is_accepted == 1) {
+                        if(candidates[0].is_active == 1) {
                             json = {
                                 message: "This user is already a candidate."
                             };
                             log.info({Function: "Candidate.Create"}, "User is already a candidate.");
                             return response.status(501).json(json);
                         }
-                        else if(candidates[0].is_accepted == 0) {
+                        else if(candidates[0].is_active == 0) {
                             json = {
                                 message: "This user has already filed a nomination and is being scrutinized."
                             };
@@ -79,7 +145,7 @@ exports.create = function(request, response) {
                             else {
                                 var candidateId = entry.insertId;
                                 json = {
-                                    CandidateID : candidateId
+                                    candidateId : candidateId
                                 };
                                 log.info({Function: "Candidate.Create"}, "Nomination filed successfully and awaits approval.");
                                 return response.status(200).json(json);
@@ -106,6 +172,45 @@ exports.create = function(request, response) {
     }
 };
 
+
+/**
+ * @api {put} /vote/v1/candidate/:id Update Candidate
+ * @apiVersion 0.1.0
+ * @apiName UpdateCandidate
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Candidate's userId.
+ *
+ * @apiParam {String} userName Candidate's prefered user name.
+ * @apiParam {String} nickName Candidate's nick name.
+ * @apiParam {String} about Candidate's detail.
+ * @apiParam {String} manifesto Candidate's manifesto.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *         "electionId": 1,
+ *         "nickName": "Katie"
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "nick_name": "Kate",
+ *       "manifesto": "I will blah blah blah",
+ *       "id": 1,
+ *       "is_accepted": 0,
+ *       "election_id": 1,
+ *       "user_id": 2,
+ *       "about": "JS developer",
+ *       "name": "Katie"
+ *     }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CandidateNotFoundError
+ *
+ */
+
 exports.update = function(request, response) {
     var json;
     try{
@@ -118,7 +223,7 @@ exports.update = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT * FROM '+ config.mysql.db.name +'.candidate WHERE id = ?', request.params.id, function(queryError, result) {
+                connection.query('SELECT * FROM '+ config.mysql.db.name +'.candidate WHERE id = ?', [request.params.id, request.body.electionId], function(queryError, result) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Candidate.Create)");
                         json  = {
@@ -165,9 +270,6 @@ exports.update = function(request, response) {
                         });
                     }
                     else {
-                        json = {
-                            message: "This user is not a candidate for this election."
-                        };
                         log.info({Function: "Candidate.Update"}, "Candidate not found. Candidate ID: " + request.body.electionId);
                         return response.status(404).json(json);
                     }
@@ -179,7 +281,7 @@ exports.update = function(request, response) {
                 error: "Parameters - electionId & userName/nickName/about/manifesto  are required!"
             };
             log.error({Function: "Candidate.Update"}, "Parameters required.");
-            return status(400).json(json);
+            return response.status(400).json(json);
         }
     }
     catch(error){
@@ -191,6 +293,35 @@ exports.update = function(request, response) {
     }
 };
 
+
+
+/**
+ * @api {get} /vote/v1/candidate/:id Show Candidate
+ * @apiVersion 0.1.0
+ * @apiName ShowCandidate
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Candidate's userId.
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "nick_name": "Kate",
+ *       "manifesto": "I will blah blah blah",
+ *       "id": 1,
+ *       "is_accepted": 0,
+ *       "election_id": 1,
+ *       "user_id": 2,
+ *       "about": "JS developer",
+ *       "name": "Katie"
+ *     }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CandidateNotFoundError
+ *
+ */
 
 exports.show = function(request, response) {
     var json;
@@ -232,6 +363,26 @@ exports.show = function(request, response) {
 };
 
 
+
+/**
+ * @api {delete} /vote/v1/candidate/:id Delete Candidate
+ * @apiVersion 0.1.0
+ * @apiName DeleteCandidate
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Candidate's userId.
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CandidateNotFoundError
+ *
+ */
+
 exports["delete"] = function(request, response) {
     var json;
     try {
@@ -243,7 +394,7 @@ exports["delete"] = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('DELETE FROM '+ config.mysql.db.name +'.candidate WHERE id = ?', request.params.id, function(queryError, nominee) {
+            connection.query('UPDATE '+ config.mysql.db.name +'.candidate SET is_active = 0 WHERE id = ?', request.params.id, function(queryError, nominee) {
                 if(queryError != null) {
                     log.error(queryError, "Query error. (Function: Candidate.Delete)");
                     json  = {

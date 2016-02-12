@@ -31,11 +31,75 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 
+/**
+ * @apiDefine AssociationNotFoundError
+ *
+ * @apiError AssociationNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/associationList List of associations for Member user
+ * @apiVersion 0.1.0
+ * @apiName CreateAssociationList
+ * @apiGroup Vote
+ *
+ * @apiParam {Integer} userId User's unique id.
+ * @apiParam {Integer} lowerLimit lower bound of the range of association list.
+ * @apiParam {Integer} upperLimit upper bound of the range of association list.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *      "userId": "1",
+ *      "lowerLimit": 0,
+ *      "upperLimit": 10
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *      {
+ *        "associationAdminName": "Goounj Bvocal",
+ *        "associationID": 1,
+ *        "associationName": "Orgware Technologies"
+ *      },
+ *      {
+ *        "associationAdminName": "Goounj Bvocal",
+ *        "associationID": 2,
+ *        "associationName": "Devs"
+ *      },
+ *      {
+ *        "associationAdminName": "Goounj Bvocal",
+ *        "associationID": 3,
+ *        "associationName": "Orgware"
+ *      }
+ *    ]
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
+
 //listing associations for participant user
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.userId !== null) && (request.body.limit != null)) {
+        if((request.body.userId !== null) && (request.body.lowerLimit != null) && (request.body.upperLimit != null)) {
             request.getConnection(function (connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = associationList.Create)");
@@ -45,7 +109,7 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
 
-                connection.query('SELECT association.id AS associationID, association.name AS associationName, (SELECT concat(first_name," ",last_name)) AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND user_id = ? LIMIT ?', ["1", request.body.userId, request.body.limit], function(queryError, result) {
+                connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND user.id = ? LIMIT ?, ?', ["1", request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
                     if (queryError != null) {
                         log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
                         json = {
@@ -53,12 +117,12 @@ exports.create = function(request, response) {
                         };
                         return response.status(500).json(json);
                     }
-                    else if(result) {
+                    else if(result[0]) {
                         log.info({Function: "associationList.Create"}, "Fetched Association List.");
                         return response.status(200).json(result);
                     }
                     else {
-                        log.info({Function: "associationList.Create"}, "Requested UserId not found.");
+                        log.info({Function: "associationList.Create"}, "No associations found.");
                         return response.sendStatus(404);
                     }
                 });
@@ -74,6 +138,31 @@ exports.create = function(request, response) {
     }
 };
 
+
+/**
+ * @api {get} /vote/v1/associationList/:id List of associations for Admin user
+ * @apiVersion 0.1.0
+ * @apiName ShowAssociationList
+ * @apiGroup Vote
+ *
+ * @apiParam {Integer} userId User's unique id.
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "associations": [
+ *                 "Orgware Technologies",
+ *                 "Devs",
+ *                 "Orgware"
+ *               ]
+ *     }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
 
 //listing associations for the admin user.
 exports.show = function(request, response) {
@@ -95,9 +184,16 @@ exports.show = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                else if(result) {
+                else if(result[0]) {
+                    var associations = [];
+                    var json = {
+                        associations: associations
+                    };
+                    for(i = 0; i < result.length; i++) {
+                        associations.push(result[i].name);
+                    }
                     log.info({Function: "associationList.Show"}, "Fetched Association List.");
-                    return response.status(200).json(result);
+                    return response.status(200).json(json);
                 }
                 else {
                     log.info({Function: "associationList.Show"}, "Requested UserId not found.");

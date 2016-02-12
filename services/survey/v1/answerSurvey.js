@@ -35,9 +35,9 @@ var pushNote = require('./../../../push');
 
 
 /**
- * @apiDefine PollNotFoundError
+ * @apiDefine SurveyNotFoundError
  *
- * @apiError PollNotFound The requested poll was not found.
+ * @apiError SurveyNotFound The requested survey was not found.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 404 Not Found
@@ -86,7 +86,7 @@ var pushNote = require('./../../../push');
  *
  * @apiUse DatabaseError
  *
- * @apiUse PollNotFoundError
+ * @apiUse SurveyNotFoundError
  *
  *
  */

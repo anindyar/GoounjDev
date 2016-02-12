@@ -32,6 +32,71 @@ var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
 
+
+
+/**
+ * @apiDefine ElectionNotFoundError
+ *
+ * @apiError ElectionNotFound The requested election was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/election Create Election
+ * @apiVersion 0.1.0
+ * @apiName CreateElection
+ * @apiGroup Vote
+ *
+ * @apiParam {String} electionName Name of the election.
+ * @apiParam {String} startDate Start date of election.
+ * @apiParam {String} endDate End date of election.
+ * @apiParam {String} vigilanceUserName Name of the vigilance user.
+ * @apiParam {String} nominationEndDate End date for nominations.
+ * @apiParam {String} associationId Association's id.
+ * @apiParam {String} adminUserId Admin user's id.
+ * @apiParam {String} members list of members of the association who can vote for the election.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *         "electionName": "Orgware",
+ *         "startDate": "Jan 18 2016",
+ *         "endDate": "Jan 20 2016",
+ *         "vigilanceUserName": "Kennet",
+ *         "nominationEndDate": "Jan 16 2016",
+ *         "associationId": "1",
+ *         "adminUserId": "1",
+ *         "members": [
+ *            "Catherine", "Victoria"
+ *         ]
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "electionId": 3
+ *      }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
+
 exports.create = function(request, response) {
     var json;
     try {
@@ -83,7 +148,7 @@ exports.create = function(request, response) {
                                     });
                                 }
                                 json = {
-                                    ElectionID : electionID
+                                    electionId : electionID
                                 };
                                 log.info({Function: "Election.Create"}, "Election creation successful.");
                                 return response.status(200).json(json);
@@ -111,10 +176,51 @@ exports.create = function(request, response) {
 };
 
 
+/**
+ * @api {put} /vote/v1/election/:id Update Election
+ * @apiVersion 0.1.0
+ * @apiName UpdateElection
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Election Id.
+ *
+ * @apiParam {String} electionName Name of the election.
+ * @apiParam {String} startDate Start date of election.
+ * @apiParam {String} endDate End date of election.
+ * @apiParam {String} vigilanceUserName Name of the vigilance user.
+ * @apiParam {String} nominationEndDate End date for nominations.
+ * @apiParam {String} associationId Association's id.
+ * @apiParam {String} adminUserId Admin user's id.
+ * @apiParam {String} members list of members of the association who can vote for the election.
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *         "electionName": "Orgware HR"
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "created_date": "2016-02-10T06:41:25.000Z",
+ *       "vigilance_user_id": 4,
+ *       "id": 3,
+ *       "nomination_end_date": "2016-01-15T18:30:00.000Z",
+ *       "start_date": "2016-01-17T18:30:00.000Z",
+ *       "end_date": "2016-01-19T18:30:00.000Z",
+ *       "name": "Orgware HR",
+ *       "association_id": 1
+ *     }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
+
 exports.update = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilenceUserFirstName != null) || (request.body.vigilenceUserLastName != null) || (request.body.nominationEndDate != null)) {
+        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilenceUserName != null) || (request.body.nominationEndDate != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Update)");
@@ -133,10 +239,6 @@ exports.update = function(request, response) {
                         return response.status(500).json(json);
                     }
                     if(check) {
-
-                        var dat = moment('Jan 10 2016').format('YYYY/MM/DD HH:mm:ss');
-                        console.log(dat);
-
                         var jsonData = {};
                         if(request.body.electionName != null) {
                             jsonData['name'] = request.body.electionName;
@@ -171,7 +273,7 @@ exports.update = function(request, response) {
                                         };
                                         return response.status(500).json(json);
                                     }
-                                    log.info({Function: "Election.Update"}, "Nothing to update.");
+                                    log.info({Function: "Election.Update"}, "Election update successful.");
                                     return response.status(200).json(give[0]);
                                 });
                             }
@@ -198,6 +300,33 @@ exports.update = function(request, response) {
     }
 };
 
+
+/**
+ * @api {get} /vote/v1/election/:id Show Election
+ * @apiVersion 0.1.0
+ * @apiName ShowElection
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Election Id.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "created_date": "2016-02-10T06:41:25.000Z",
+ *       "vigilance_user_id": 4,
+ *       "id": 3,
+ *       "nomination_end_date": "2016-01-15T18:30:00.000Z",
+ *       "start_date": "2016-01-17T18:30:00.000Z",
+ *       "end_date": "2016-01-19T18:30:00.000Z",
+ *       "name": "Orgware HR",
+ *       "association_id": 1
+ *     }
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
 
 exports.show = function(request, response) {
     var json;
@@ -238,6 +367,23 @@ exports.show = function(request, response) {
     }
 };
 
+
+/**
+ * @api {delete} /vote/v1/election/:id Delete Election
+ * @apiVersion 0.1.0
+ * @apiName DeleteElection
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Election Id.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
 
 exports["delete"] = function(request, response) {
     var json;
