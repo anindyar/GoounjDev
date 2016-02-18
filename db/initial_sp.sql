@@ -4,8 +4,10 @@ DROP procedure IF EXISTS `setAudienceForSurvey`;
 DELIMITER //
 USE `goounj`//
 CREATE PROCEDURE `setAudienceForSurvey`(IN phoneNumber VARCHAR(45), IN pollId VARCHAR(45), IN utcTimeStamp DATETIME, IN name VARCHAR(45), OUT userId INT(11), OUT deviceToken VARCHAR(200))
-    DETERMINISTIC
-    COMMENT 'Procedure to assign audience to a survey'
+LANGUAGE SQL
+DETERMINISTIC
+SQL SECURITY DEFINER
+COMMENT 'Procedure to assign audience to a survey'
 BEGIN
 SET userId := (SELECT id FROM user WHERE phone = phoneNumber LIMIT 1);
 IF userId IS NULL THEN
