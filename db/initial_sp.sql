@@ -3,7 +3,7 @@ DROP procedure IF EXISTS `setAudienceForSurvey`;
 
 DELIMITER //
 USE `goounj`//
-CREATE DEFINER=`root`@`localhost` PROCEDURE `setAudienceForSurvey`(IN phoneNumber VARCHAR(45), IN pollId VARCHAR(45), IN utcTimeStamp DATETIME, IN name VARCHAR(45), OUT userId INT(11), OUT deviceToken VARCHAR(200))
+CREATE PROCEDURE `setAudienceForSurvey`(IN phoneNumber VARCHAR(45), IN pollId VARCHAR(45), IN utcTimeStamp DATETIME, IN name VARCHAR(45), OUT userId INT(11), OUT deviceToken VARCHAR(200))
     DETERMINISTIC
     COMMENT 'Procedure to assign audience to a survey'
 BEGIN

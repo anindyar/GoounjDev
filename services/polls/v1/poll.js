@@ -148,7 +148,7 @@ exports.create = function(request, response) {
 
                     connection.query('INSERT INTO ' + config.mysql.db.name +'.poll (start_date, end_date, poll_name, is_boost, visibility_type_id, reward_type_id, created_user_id, poll_type_id, is_active, is_generic) VALUES (?, ?, ?, ?, (SELECT id FROM visibility_type WHERE type=?), (SELECT id FROM reward_type WHERE type=?), ?, (SELECT id FROM poll_type WHERE type=?), ?, ?)', [utcTimeStamp, utcTimeStampEnd, request.body.pollName, request.body.isBoost, request.body.visibilityType, request.body.rewardType, request.body.createdUserId, request.body.pollType, "1", isGeneric], function (queryError, poll) {
                         if (queryError != null) {
-                            log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                            log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function = Poll.Create)");
                             json = {
                                 error: "Requested action failed. Database could not be reached."
                             };
@@ -162,7 +162,7 @@ exports.create = function(request, response) {
                                     var iCopy = i;
                                     connection.query('INSERT INTO ' + config.mysql.db.name + '.question (poll_id, question, question_type_id) VALUES (?, ?, (SELECT id FROM question_type WHERE type=?))', [pollID, questionList[iCopy].question, questionList[iCopy].questionType], function (queryError, quest) {
                                         if (queryError != null) {
-                                            log.error(queryError, "Query error. Failed to create a new question. Question details " + JSON.stringify(request.body.questionList) + "(Function= Poll Create)");
+                                            log.error(queryError, "Query error. Failed to create a new question. Question details " + JSON.stringify(request.body.questionList) + "(Function = Poll.Create)");
                                             json = {
                                                 error: "Requested action failed. Database could not be reached."
                                             };
@@ -174,7 +174,7 @@ exports.create = function(request, response) {
                                             for (var j = 0; j < options.length; j++) {
                                                 connection.query('INSERT INTO ' + config.mysql.db.name + '.question_options (question_id, `option`) VALUES (?, ?)', [questionID, options[j]], function (queryError, choice) {
                                                     if (queryError != null) {
-                                                        log.error(queryError, "Query error. Failed to create a new options. Question details " + JSON.stringify(request.body.questionList) + "(Function= Poll Create)");
+                                                        log.error(queryError, "Query error. Failed to create a new options. Question details " + JSON.stringify(request.body.questionList) + "(Function = Poll.Create)");
                                                         json = {
                                                             error: "Requested action failed. Database could not be reached."
                                                         };
@@ -189,7 +189,7 @@ exports.create = function(request, response) {
 
                             connection.query('INSERT INTO ' + config.mysql.db.name +'.category_poll_map (poll_id, category_id) VALUES (?, (SELECT id FROM category WHERE `name` = ?))', [pollID, request.body.category], function (queryError, poll) {
                                 if (queryError != null) {
-                                    log.error(queryError, "Query error. Failed to map poll to category. Category: " + JSON.stringify(request.body.category) + "(Function= Poll Create)");
+                                    log.error(queryError, "Query error. Failed to map poll to category. Category: " + JSON.stringify(request.body.category) + "(Function = Poll.Create)");
                                     json = {
                                         error: "Requested action failed. Database could not be reached."
                                     };
@@ -205,7 +205,7 @@ exports.create = function(request, response) {
                                         var number = updatedAudienceList[kCopy];
                                         connection.query('CALL setAudienceForPoll(?, ?);', [number, pollID], function (queryError, user) {
                                             if (queryError != null) {
-                                                log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                                log.error(queryError, "Query error. Failed to update audience. User details " + JSON.stringify(request.body.phone) + "(Function = Poll.Create)");
                                                 jsn = {
                                                     error: "Requested action failed. Database could not be reached."
                                                 };
@@ -217,7 +217,7 @@ exports.create = function(request, response) {
 
                                 connection.query('SELECT phone, device_token FROM ' + config.mysql.db.name + '.user WHERE phone IN (?)', updatedAudienceList, function (queryError, list) {
                                     if (queryError != null) {
-                                        log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function= Poll Create)");
+                                        log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function = Poll.Create)");
                                         json = {
                                             error: "Requested action failed. Database could not be reached."
                                         };
