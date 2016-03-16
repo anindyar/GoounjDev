@@ -42,7 +42,7 @@ module.exports = {
             methods: require('./surveyList'),
             auth: 'bypass'
         }, {
-            name: 'surveyList',
+            name: 'surveyResult',
             methods: require('./surveyResult'),
             auth: 'bypass'
         }
