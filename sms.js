@@ -39,8 +39,7 @@ exports.sendSMS = function(recipientList, text) {
             var options = {
                 hostname: config.sms.adithya.host,
                 method: "GET",
-                path: '/adithya/Api/?username='+ config.sms.adithya.username +'&password='+ config.sms.adithya.password + '&senderid=' + config.sms.adithya.senderId + '&message=' + content + '&msgtype=normal&mobileno=' + recipientList[i],
-            };
+                path: '/adithya/Api/?username='+ config.sms.adithya.username +'&password='+ config.sms.adithya.password + '&senderid=' + config.sms.adithya.senderId + '&message=' + content + '&msgtype=normal&mobileno=' + recipientList[i]};
             var req = http.request(options, function(res) {
                 res.on('data', function(chunk) {
                     log.info({Function: "SMS.sendSMS"}, "SMS sent successfully. Details: " + chunk);
