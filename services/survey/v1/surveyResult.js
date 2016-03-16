@@ -234,8 +234,11 @@ exports.show = function(request, response) {
                         });
                     }
                     else {
+                        json = {
+                            error: "No results for this survey poll."
+                        };
                         log.info({Function: "SurveyResult.Create"}, "Requested Survey Poll Result Not Found");
-                        return response.sendStatus(404);
+                        return response.status(404).json(json);
                     }
                 }
             });
