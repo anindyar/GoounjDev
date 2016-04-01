@@ -14,9 +14,9 @@ exports.create = function(request, response) {
         }
         else {
             json = {
-                error: "userId required."
+                error: "userId & authCode required."
             };
-            log.error({Function: "VerifyOtp.Create"}, "userId required");
+            log.error({Function: "VerifyOtp.Create"}, "userId and authCode are required");
             return response.status(400).json(json);
         }
     }

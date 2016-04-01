@@ -35,48 +35,38 @@ var log = require('./log');
 //otp verification
 exports.verifyotp = function(request, response) {
     var json;
-    if((request.body.authCode != null) && (request.body.userId != null)) {
-            request.getConnection(function(connectionError, connection) {
-                if(connectionError != null) {
-                    log.error(connectionError, "Database connection error (Function = otp.verifyotp)");
-                    json = {
-                        error: "OTP verification failed. Database could not be reached."
-                    };
-                    return response.status(500).json(json);
+    request.getConnection(function(connectionError, connection) {
+        if(connectionError != null) {
+            log.error(connectionError, "Database connection error (Function = otp.verifyotp)");
+            json = {
+                error: "OTP verification failed. Database could not be reached."
+            };
+            return response.status(500).json(json);
+        }
+        connection.query('SELECT auth_code FROM '+ config.mysql.db.name +'.two_step_verification WHERE user_id = ?', request.body.userId, function(queryError, match) {
+            if(queryError != null) {
+                log.error(connectionError, "Database connection error (Function = otp.verifyotp)");
+                json = {
+                    error: "Requested action failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            if(match[0]) {
+                if(match[0].auth_code == request.body.authCode) {
+                    log.info({Function: "otp.verifyotp"}, "otp verification successful.");
+                    return response.sendStatus(200);
                 }
-                connection.query('SELECT auth_code FROM '+ config.mysql.db.name +'.two_step_verification WHERE user_id = ?', request.body.userId, function(queryError, match) {
-                    if(queryError != null) {
-                        log.error(connectionError, "Database connection error (Function = otp.verifyotp)");
-                        json = {
-                            error: "Requested action failed. Database could not be reached."
-                        };
-                        return response.status(500).json(json);
-                    }
-                    if(match[0]) {
-                        if(match[0].auth_code == request.body.authCode) {
-                            log.info({Function: "otp.verifyotp"}, "otp verification successful.");
-                            return response.sendStatus(200);
-                        }
-                        else {
-                            log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                            return response.sendStatus(200);
-                        }
-                    }
-                    else {
-                        log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                        return response.sendStatus(401);
-                    }
-                });
-            });
-
-    }
-    else {
-        json = {
-            error: "userId and authCode are required."
-        };
-        log.info({Function: "otp.verifyotp"}, "otp verification for vote unsuccessful.");
-        return response.status(400).json(json);
-    }
+                else {
+                    log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
+                    return response.sendStatus(200);
+                }
+            }
+            else {
+                log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
+                return response.sendStatus(401);
+            }
+        });
+    });
 };
 
 
