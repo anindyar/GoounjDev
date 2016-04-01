@@ -72,4 +72,4 @@ exports.show = function(request, response) {
         log.error(error, "Exception Occurred (Function = Poll.Result)");
         return response.status(500).json(json);
     }
-}
+};

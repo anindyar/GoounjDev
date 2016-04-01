@@ -65,6 +65,14 @@ module.exports = {
             name: 'voteResult',
             methods: require('./voteResult'),
             auth: 'bypass'
+        }, {
+            name: 'requestOtp',
+            methods: require('./requestOtp'),
+            auth: 'bypass'
+        }, {
+            name: 'verifyOtp',
+            methods: require('./verifyOtp'),
+            auth: 'bypass'
         }
     ]
 };

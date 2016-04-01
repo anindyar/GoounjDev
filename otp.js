@@ -56,11 +56,11 @@ exports.verifyotp = function(request, response) {
                     if(match[0]) {
                         if(match[0].auth_code == request.body.authCode) {
                             log.info({Function: "otp.verifyotp"}, "otp verification successful.");
-                            return 1;
+                            return response.sendStatus(200);
                         }
                         else {
                             log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                            return 0;
+                            return response.sendStatus(200);
                         }
                     }
                     else {
@@ -127,7 +127,7 @@ exports.sendotp = function(request, response, callback) {
                             }
                             else {
                                 log.info({Function: "otp.sendotp"}, "otp generation successful.");
-                                return 1;
+                                return response.sendStatus(200);;
                             }
                         });
                     }
@@ -142,7 +142,7 @@ exports.sendotp = function(request, response, callback) {
                             }
                             else {
                                 log.info({Function: "otp.sendotp"}, "otp generation successful.");
-                                return 1;
+                                return response.sendStatus(200);
                             }
                         });
                     }

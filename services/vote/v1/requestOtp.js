@@ -2,8 +2,8 @@
  * Created by catherinesamuel on 11/02/16.
  */
 
-var config = require('./config');
-var log = require('./log');
+var config = require('./../../../config');
+var log = require('./../../../log');
 var otp = require('./../../../otp');
 
 exports.create = function(request, response) {
@@ -13,7 +13,7 @@ exports.create = function(request, response) {
             otp.sendotp(request, response);
         }
         else {
-            json ={
+            json = {
                 error: "userId required."
             };
             log.error({Function: "requestOtp.Create"}, "userId required");
