@@ -36,7 +36,6 @@ var log = require('./log');
 exports.verifyotp = function(request, response) {
     var json;
     if((request.body.authCode != null) && (request.body.userId != null)) {
-
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = otp.verifyotp)");
@@ -65,7 +64,7 @@ exports.verifyotp = function(request, response) {
                     }
                     else {
                         log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                        return 0;
+                        return response.sendStatus(401);
                     }
                 });
             });
@@ -127,7 +126,7 @@ exports.sendotp = function(request, response, callback) {
                             }
                             else {
                                 log.info({Function: "otp.sendotp"}, "otp generation successful.");
-                                return response.sendStatus(200);;
+                                return response.sendStatus(200);
                             }
                         });
                     }
