@@ -68,7 +68,7 @@ var moment = require('moment');
  * @apiParam {String} vigilanceUserName Name of the vigilance user.
  * @apiParam {String} nominationEndDate End date for nominations.
  * @apiParam {String} associationId Association's id.
- * @apiParam {String} adminUserId Admin user's id.
+ * @apiParam {String} associationAdminId Admin user's id.
  * @apiParam {String} members list of members of the association who can vote for the election.
  *
  * @apiParamExample {json} Request-Example:
@@ -79,7 +79,7 @@ var moment = require('moment');
  *         "vigilanceUserName": "Kennet",
  *         "nominationEndDate": "Jan 16 2016",
  *         "associationId": "1",
- *         "adminUserId": "1",
+ *         "associationAdminId": "1",
  *         "members": [
  *            "Catherine", "Victoria"
  *         ]
@@ -100,7 +100,7 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.adminUserId != null) && (request.body.members != null)) {
+        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.associationAdminId != null) && (request.body.members != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Create)");
@@ -126,7 +126,7 @@ exports.create = function(request, response) {
                     }
                     else if(entry) {
                         var electionID = entry.insertId;
-                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, ?)', [electionID, request.body.associationId, request.body.adminUserId], function(queryError, mapping) {
+                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, ?)', [electionID, request.body.associationId, request.body.associationAdminId], function(queryError, mapping) {
                             if (queryError != null) {
                                 log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
                                 json = {
@@ -189,8 +189,6 @@ exports.create = function(request, response) {
  * @apiParam {String} endDate End date of election.
  * @apiParam {String} vigilanceUserName Name of the vigilance user.
  * @apiParam {String} nominationEndDate End date for nominations.
- * @apiParam {String} associationId Association's id.
- * @apiParam {String} adminUserId Admin user's id.
  * @apiParam {String} members list of members of the association who can vote for the election.
  *
  * @apiParamExample {json} Request-Example:
@@ -253,7 +251,7 @@ exports.update = function(request, response) {
                             jsonData['vigilance_user_id'] = request.body.vigilanceUserName;
                         }
                         if(request.body.nominationEndDate != null) {
-                            jsonData['nomination_end_date'] = moment(request.body.nominationEndDate).format('YYYY/MM/DD HH:mm:ss');;
+                            jsonData['nomination_end_date'] = moment(request.body.nominationEndDate).format('YYYY/MM/DD HH:mm:ss');
                         }
 
                         connection.query('UPDATE '+ config.mysql.db.name +'.election SET ? WHERE id = ?', [jsonData, request.params.id], function(queryError, item) {
@@ -284,6 +282,42 @@ exports.update = function(request, response) {
                         return response.sendStatus(404);
                     }
                 });
+            });
+        }
+        else if(request.body.members != null) {
+            request.getConnection(function(connectionError, connection) {
+                if (connectionError != null) {
+                    log.error(connectionError, "Database connection error (Function = Election.Update)");
+                    json = {
+                        error: "Requested action failed. Database could not be reached."
+                    };
+                    return response.status(500).json(json);
+                }
+                var memberList = request.body.members;
+                for(i = 0; i < memberList.length; i++){
+                    connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[i]], function(queryError, check) {
+                        if (queryError != null) {
+                            log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
+                            json = {
+                                error: "Requested action failed. Database could not be reached."
+                            };
+                            return response.status(500).json(json);
+                        }
+                        else {
+                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, final) {
+                                if (queryError != null) {
+                                    log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
+                                    json = {
+                                        error: "Requested action failed. Database could not be reached."
+                                    };
+                                    return response.status(500).json(json);
+                                }
+                                log.info({Function: "Election.Update"}, "Election update successful.");
+                                return response.status(200).json(final[0]);
+                            });
+                        }
+                    });
+                }
             });
         }
         else {
@@ -339,7 +373,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT * FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, election) {
+            connection.query('SELECT id, name, created_date AS createdDate, vigilance_user_id AS vigilanceUserId, nomination_end_date AS nominationEndDate, start_date AS startDate, end_date AS endDate, association_id AS associationId FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, election) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch election details. (Function = Election.Show)");
                     json = {
