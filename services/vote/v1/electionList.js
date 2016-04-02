@@ -116,9 +116,9 @@ exports.create = function(request, response) {
                         else if(list) {
                             var electionOBJ = {}, electionList = [];
                             for(i = 0; i < list.length; i++) {
-                                var startDate = list[i].startDate.toString();
-                                var endDate = list[i].endDate.toString();
-                                var nominationEndDate = list[i].nominationEndDate.toString();
+                                var startDate = list[i].startDate;
+                                var endDate = list[i].endDate;
+                                var nominationEndDate = list[i].nominationEndDate;
 
                                 electionOBJ = {
                                     electionId: list[i].electionId,
@@ -152,9 +152,9 @@ exports.create = function(request, response) {
                         else if(list) {
                             var electionOBJ = {}, electionList = [];
                             for(i = 0; i < list.length; i++) {
-                                var startDate = list[i].startDate.toString();
-                                var endDate = list[i].endDate.toString();
-                                var nominationEndDate = list[i].nominationEndDate.toString();
+                                var startDate = list[i].startDate;
+                                var endDate = list[i].endDate;
+                                var nominationEndDate = list[i].nominationEndDate;
 
                                 electionOBJ = {
                                     electionId: list[i].electionId,
