@@ -58,7 +58,7 @@ exports.verifyotp = function(request, response) {
                 }
                 else {
                     log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                    return response.sendStatus(200);
+                    return response.sendStatus(401);
                 }
             }
             else {
