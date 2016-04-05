@@ -307,8 +307,8 @@ exports.update = function(request, response) {
                                     util.election(request, connection, response);
                                 }
                             }
-                            else if(check.length != 0) {
-                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE association_id = (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?) AND user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?)', [request.params.id, memberList[iCopy]], function(queryError, check) {
+                            else if(check.length == 0) {
+                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE association_id = (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?) AND user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?)', [request.params.id, memberList[iCopy]], function(queryError, memberCheck) {
                                     if (queryError != null) {
                                         log.error(queryError, "Query error. Failed to update an election. (Function = Election.Update)");
                                         json = {
@@ -316,7 +316,8 @@ exports.update = function(request, response) {
                                         };
                                         return response.status(500).json(json);
                                     }
-                                    else if(check) {
+                                    else if(memberCheck.length != 0) {
+                                        console.log(memberCheck);
                                         connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[iCopy]], function(queryError, check) {
                                             if (queryError != null) {
                                                 log.error(queryError, "Query error. Failed to update an election. (Function = Election.Update)");
@@ -335,6 +336,13 @@ exports.update = function(request, response) {
                                                 }
                                             }
                                         });
+                                    }
+                                    else {
+                                        json = {
+                                            error: memberList[iCopy] + " is not an association member."
+                                        };
+                                        log.info({Function: "Election.Update"}, memberList[iCopy] + " is not an association member. " + count + " members added.");
+                                        return response.status(400).json(json);
                                     }
                                 });
                             }
