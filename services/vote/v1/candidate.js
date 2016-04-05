@@ -105,7 +105,7 @@ exports.create = function(request, response) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Candidate.Create");
                     json = {
-                        error: "Association Create failed. Database could not be reached."
+                        error: "Requested Action Failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
                 }
@@ -113,7 +113,7 @@ exports.create = function(request, response) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Candidate.Create)");
                         json  = {
-                            error: "Query error. Failed to create new candidate."
+                            error: "Requested Action Failed. Database could not be reached."
                         };
                         return response.status(500).json(json);
                     }
@@ -138,7 +138,7 @@ exports.create = function(request, response) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. (Function: Candidate.Create)");
                                 json  = {
-                                    error: "Query error. Failed to create new candidate."
+                                    error: "Requested Action Failed. Database could not be reached."
                                 };
                                 return response.status(500).json(json);
                             }
@@ -227,7 +227,7 @@ exports.update = function(request, response) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Candidate.Create)");
                         json  = {
-                            error: "Query error. Failed to create new candidate."
+                            error: "Requested Action Failed. Database could not be reached."
                         };
                         return response.status(500).json(json);
                     }
@@ -250,7 +250,7 @@ exports.update = function(request, response) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. (Function: Candidate.Update)");
                                 json  = {
-                                    error: "Query error. Failed to create new candidate."
+                                    error: "Requested Action Failed. Database could not be reached."
                                 };
                                 return response.status(500).json(json);
                             }
@@ -259,7 +259,7 @@ exports.update = function(request, response) {
                                     if(queryError != null) {
                                         log.error(queryError, "Query error. (Function: Candidate.Update)");
                                         json  = {
-                                            error: "Query error. Failed to create new candidate."
+                                            error: "Requested Action Failed. Database could not be reached."
                                         };
                                         return response.status(500).json(json);
                                     }
@@ -330,7 +330,7 @@ exports.show = function(request, response) {
             if (connectionError != null) {
                 log.error(connectionError, "Database connection error (Function = Candidate.Show");
                 json = {
-                    error: "Candidate Show failed. Database could not be reached."
+                    error: "Requested Action Failed. Database could not be reached."
                 };
                 return response.status(500).json(json);
             }
@@ -338,7 +338,7 @@ exports.show = function(request, response) {
                 if(queryError != null) {
                     log.error(queryError, "Query error. (Function: Candidate.Show)");
                     json  = {
-                        error: "Query error. Failed to show candidate details."
+                        error: "Requested Action Failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
                 }
@@ -390,7 +390,7 @@ exports["delete"] = function(request, response) {
             if (connectionError != null) {
                 log.error(connectionError, "Database connection error (Function = Candidate.Delete");
                 json = {
-                    error: "Candidate delete failed. Database could not be reached."
+                    error: "Requested Action Failed. Database could not be reached."
                 };
                 return response.status(500).json(json);
             }
@@ -398,7 +398,7 @@ exports["delete"] = function(request, response) {
                 if(queryError != null) {
                     log.error(queryError, "Query error. (Function: Candidate.Delete)");
                     json  = {
-                        error: "Query error. Failed to delete candidate."
+                        error: "Requested Action Failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
                 }

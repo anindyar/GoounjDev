@@ -387,8 +387,29 @@ exports.show = function(request, response) {
                     return response.status(500).json(json);
                 }
                 else if(result[0]) {
-                    log.info({Function: "Association.Show"}, "Fetched Association Details. Association ID: " + request.params.id);
-                    return response.status(200).json(result[0]);
+                    var associationObj = {
+                        associationName: result[0].associationName,
+                        associationAdminId: result[0].associationAdminId,
+                        associationAdminName: result[0].associationAdminName,
+                        memberTotal: result[0].memberTotal,
+                        members: []
+                    };
+                    connection.query('SELECT name FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, member) {
+                        if (queryError != null) {
+                            log.error(queryError, "Query Error. Failed To Show an Association. Association ID: " + request.params.id + " (Function = Association.Show)");
+                            json = {
+                                error: "Requested Action Failed. Database could not be reached."
+                            };
+                            return response.status(500).json(json);
+                        }
+                        else if(member) {
+                            for(var i=0; i<member.length; i++) {
+                                associationObj.members.push(member[i].name);
+                            }
+                            log.info({Function: "Association.Show"}, "Fetched Association Details. Association ID: " + request.params.id);
+                            return response.status(200).json(associationObj);
+                        }
+                    });
                 }
                 else {
                     log.info({Function: "Association.Show"}, "Requested Association not found. Association ID: " + request.params.id);

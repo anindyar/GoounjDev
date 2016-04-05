@@ -104,7 +104,7 @@ exports.create = function(request, response) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = associationList.Create)");
                     json = {
-                        error: "associationList.Create failed. Database could not be reached."
+                        error: "Requested Action Failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
                 }

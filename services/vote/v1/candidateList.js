@@ -122,7 +122,7 @@ exports.show = function(request, response) {
                         if(queryError != null) {
                             log.error(queryError, "Query error. (Function: CandidateList.Show)");
                             json  = {
-                                error: "Query error. Failed to list candidates."
+                                error: "Requested Action Failed. Database could not be reached."
                             };
                             return response.status(500).json(json);
                         }

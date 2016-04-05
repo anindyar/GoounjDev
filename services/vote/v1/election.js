@@ -31,6 +31,7 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
+var util = require('./util');
 
 
 
@@ -263,17 +264,8 @@ exports.update = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             if(item) {
-                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, give) {
-                                    if (queryError != null) {
-                                        log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
-                                        json = {
-                                            error: "Requested action failed. Database could not be reached."
-                                        };
-                                        return response.status(500).json(json);
-                                    }
-                                    log.info({Function: "Election.Update"}, "Election update successful.");
-                                    return response.status(200).json(give[0]);
-                                });
+                                log.info({Function: "Election.Update"}, "Election update successful. Election ID: " + request.params.id);
+                                util.election(request, connection, response);
                             }
                         });
                     }
@@ -311,25 +303,38 @@ exports.update = function(request, response) {
 
                                 if(iCopy == memberList.length - 1 && count == 0) {
                                     log.info({Function: "Election.Update"}, "No new members.");
-                                    return response.sendStatus(200);
+                                    log.info({Function: "Election.Update"}, "Election update successful. Election ID: " + request.params.id);
+                                    util.election(request, connection, response);
                                 }
                             }
                             else if(check.length != 0) {
-                                connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[iCopy]], function(queryError, check) {
+                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE association_id = (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?) AND user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?)', [request.params.id, memberList[iCopy]], function(queryError, check) {
                                     if (queryError != null) {
-                                        log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
+                                        log.error(queryError, "Query error. Failed to update an election. (Function = Election.Update)");
                                         json = {
                                             error: "Requested action failed. Database could not be reached."
                                         };
                                         return response.status(500).json(json);
                                     }
-                                    else {
-                                        log.info({Function: "Election.Update"}, "adding voting members..");
-                                        count++;
-                                        if(iCopy == memberList.length - 1) {
-                                            log.info({Function: "Election.Update"}, count + " members added.");
-                                            return response.sendStatus(200);
-                                        }
+                                    else if(check) {
+                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[iCopy]], function(queryError, check) {
+                                            if (queryError != null) {
+                                                log.error(queryError, "Query error. Failed to update an election. (Function = Election.Update)");
+                                                json = {
+                                                    error: "Requested action failed. Database could not be reached."
+                                                };
+                                                return response.status(500).json(json);
+                                            }
+                                            else {
+                                                log.info({Function: "Election.Update"}, "adding voting members..");
+                                                count++;
+                                                if(iCopy == memberList.length - 1) {
+                                                    log.info({Function: "Election.Update"}, count + " members added.");
+                                                    log.info({Function: "Election.Update"}, "Election update successful. Election ID: " + request.params.id);
+                                                    util.election(request, connection, response);
+                                                }
+                                            }
+                                        });
                                     }
                                 });
                             }
@@ -391,23 +396,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT id, name, created_date AS createdDate, vigilance_user_id AS vigilanceUserId, nomination_end_date AS nominationEndDate, start_date AS startDate, end_date AS endDate, association_id AS associationId FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, election) {
-                if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to fetch election details. (Function = Election.Show)");
-                    json = {
-                        error: "Requested action failed. Database could not be reached."
-                    };
-                    return response.status(500).json(json);
-                }
-                if(election) {
-                    log.info({Function: "Election.Show"}, "Fetched Election details.");
-                    return response.status(200).json(election[0]);
-                }
-                else {
-                    log.info({Function: "Election.Show"}, "Requested election not found");
-                    return response.sendStatus(404);
-                }
-            });
+            util.election(request, connection, response);
         });
     }
     catch(error){

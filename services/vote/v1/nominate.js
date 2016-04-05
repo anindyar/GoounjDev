@@ -39,7 +39,7 @@ exports.create = function(request, response) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Nominate.Create");
                     json = {
-                        error: "Candidate listing failed. Database could not be reached."
+                        error: "Requested Action Failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
                 }
@@ -47,7 +47,7 @@ exports.create = function(request, response) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Nominate.Create)");
                         json  = {
-                            error: "Query error. Failed to update candidates."
+                            error: "Requested Action Failed. Database could not be reached."
                         };
                         return response.status(500).json(json);
                     }
@@ -56,7 +56,7 @@ exports.create = function(request, response) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. (Function: Nominate.Create)");
                                 json  = {
-                                    error: "Query error. Failed to update candidates."
+                                    error: "Requested Action Failed. Database could not be reached."
                                 };
                                 return response.status(500).json(json);
                             }
