@@ -109,7 +109,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                connection.query('SELECT is_accepted FROM '+ config.mysql.db.name +'.candidate  WHERE user_id = ? AND election_id = ?', [request.body.userId, request.body.electionId], function(queryError, candidates) {
+                connection.query('SELECT is_active FROM '+ config.mysql.db.name +'.candidate  WHERE user_id = ? AND election_id = ?', [request.body.userId, request.body.electionId], function(queryError, candidates) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. (Function: Candidate.Create)");
                         json  = {

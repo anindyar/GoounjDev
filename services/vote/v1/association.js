@@ -128,7 +128,7 @@ exports.create = function(request, response) {
                                     }
                                 });
                                 json = {
-                                    AssociationID: associationID
+                                    associationId: associationID
                                 };
                                 log.info({Function: "Association.Create"}, "New association created successfully. Association ID: " + associationID);
                                 return response.status(200).json(json);

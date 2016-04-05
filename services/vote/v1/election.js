@@ -136,7 +136,7 @@ exports.create = function(request, response) {
                             }
                             if(mapping) {
                                 var memberList = request.body.members;
-                                for(i = 0; i < memberList.length; i++){
+                                for(var i = 0; i < memberList.length; i++){
                                     connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [electionID, request.body.associationId, memberList[i]], function(queryError, check) {
                                         if (queryError != null) {
                                             log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
@@ -218,7 +218,7 @@ exports.create = function(request, response) {
 exports.update = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilenceUserName != null) || (request.body.nominationEndDate != null)) {
+        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilanceUserName != null) || (request.body.nominationEndDate != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Update)");
@@ -294,29 +294,47 @@ exports.update = function(request, response) {
                     return response.status(500).json(json);
                 }
                 var memberList = request.body.members;
-                for(i = 0; i < memberList.length; i++){
-                    connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[i]], function(queryError, check) {
-                        if (queryError != null) {
-                            log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
-                            json = {
-                                error: "Requested action failed. Database could not be reached."
-                            };
-                            return response.status(500).json(json);
-                        }
-                        else {
-                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, final) {
-                                if (queryError != null) {
-                                    log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
-                                    json = {
-                                        error: "Requested action failed. Database could not be reached."
-                                    };
-                                    return response.status(500).json(json);
+                var count = 0;
+                for(var i = 0; i < memberList.length; i++){
+                    (function () {
+                        var iCopy = i;
+                        connection.query('SELECT * FROM '+ config.mysql.db.name +'.election_user_map WHERE election_id = ? AND user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?)', [request.params.id, memberList[iCopy]], function(queryError, check) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                            else if(check.length != 0) {
+                                log.info({Function: "Election.Update"}, memberList[iCopy] + " is already eligible");
+
+                                if(iCopy == memberList.length - 1 && count == 0) {
+                                    log.info({Function: "Election.Update"}, "No new members.");
+                                    return response.sendStatus(200);
                                 }
-                                log.info({Function: "Election.Update"}, "Election update successful.");
-                                return response.status(200).json(final[0]);
-                            });
-                        }
-                    });
+                            }
+                            else if(check.length != 0) {
+                                connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[iCopy]], function(queryError, check) {
+                                    if (queryError != null) {
+                                        log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
+                                        json = {
+                                            error: "Requested action failed. Database could not be reached."
+                                        };
+                                        return response.status(500).json(json);
+                                    }
+                                    else {
+                                        log.info({Function: "Election.Update"}, "adding voting members..");
+                                        count++;
+                                        if(iCopy == memberList.length - 1) {
+                                            log.info({Function: "Election.Update"}, count + " members added.");
+                                            return response.sendStatus(200);
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }());
                 }
             });
         }

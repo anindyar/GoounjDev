@@ -32,6 +32,7 @@ var log = require('./../../../log');
 
 exports.create = function(request, response) {
     var json;
+    var memberList = [];
     try {
         if(request.body.associationId != null && request.body.members != null) {
             request.getConnection(function(connectionError, connection) {
@@ -51,38 +52,68 @@ exports.create = function(request, response) {
                         };
                         return response.status(500).json(json);
                     }
-                    if(item) {
-                        var memberList = request.body.members;
-                        for(i = 0; i < memberList.length; i++) {
-                            connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT user_id FROM '+ config.mysql.db.name +'.user WHERE name = ?) AND association_id = ?', [memberList[i], request.body.associationid], function(queryError, check) {
-                                if(queryError != null) {
-                                    log.error(queryError, "Query error. (Function: Invite.Create)");
-                                    json  = {
-                                        error: "Query error. Failed to create new association."
-                                    };
-                                    return response.status(500).json(json);
-                                }
-                                if(!check) {
-                                    connection.query('INSERT INTO '+ config.mysql.db.name +'.association_user_map (user_id, association_id) VALUES ((SELECT user_id FROM '+ config.mysql.db.name +'.user WHERE first_name = ? AND last_name = ?), ?)', [memberList[i].firstName, memberList[i].lastName, request.params.id], function(queryError, fill) {
-                                        if(queryError != null) {
-                                            log.error(queryError, "Query error. (Function: Invite.Create)");
-                                            json  = {
-                                                error: "Query error. Failed to create new association."
-                                            };
-                                            return response.status(500).json(json);
-                                        }
-                                        else{
-                                            log.info({Function: "Invite.Create"}, "Association members invited.");
-                                            return response.sendStatus(200);
-                                        }
-                                    });
-                                }
-                            });
+                    if(item.length != 0) {
+                        var count = 0;
+                        memberList = request.body.members;
+                        for(var i = 0; i < memberList.length; i++) {
+                            (function () {
+                                var iCopy = i;
+                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?) AND association_id = ?', [memberList[iCopy], request.body.associationid], function(queryError, check) {
+                                    if(queryError != null) {
+                                        log.error(queryError, "Query error. (Function: Invite.Create)");
+                                        json  = {
+                                            error: "Query error. Failed to add association members."
+                                        };
+                                        return response.status(500).json(json);
+                                    }
+                                    if(check.length == 0) {
+                                        connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?) AND association_id = ?',  [memberList[iCopy], request.body.associationId], function(queryError, find) {
+                                            if(queryError != null) {
+                                                log.error(queryError, "Query error. (Function: Invite.Create)");
+                                                json  = {
+                                                    error: "Query error. Failed to add association members."
+                                                };
+                                                return response.status(500).json(json);
+                                            }
+                                            else if(find.length != 0) {
+                                                log.info({Function: "Invite.Create"}, memberList[iCopy] + " is already a member");
+
+                                                if(iCopy == memberList.length - 1 && count == 0) {
+                                                    log.info({Function: "Invite.Create"}, "No new members.");
+                                                    return response.sendStatus(200);
+                                                }
+                                            }
+                                            else {
+                                                connection.query('INSERT INTO '+ config.mysql.db.name +'.association_user_map (user_id, association_id) VALUES ((SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?), ?)', [memberList[iCopy], request.body.associationId], function(queryError, fill) {
+                                                    if(queryError != null) {
+                                                        log.error(queryError, "Query error. (Function: Invite.Create)");
+                                                        json  = {
+                                                            error: "Query error. Failed to add association members."
+                                                        };
+                                                        return response.status(500).json(json);
+                                                    }
+                                                    else {
+                                                        log.info({Function: "Invite.Create"}, "adding members..");
+                                                        count++;
+                                                        if(iCopy == memberList.length - 1) {
+                                                            log.info({Function: "Invite.Create"}, count + " members added.");
+                                                            return response.sendStatus(200);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }());
                         }
                     }
                     else {
+                        json = {
+                            error: "Association not found."
+                        };
                         log.info({Function: "AssociationInvite.Create"}, "Association not found.");
-                        return response.sendStatus(404);
+                        return response.status(404).json(json);
                     }
                 });
 
@@ -109,7 +140,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT name AS members FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, list) {
+            connection.query('SELECT name FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, list) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to create an election. (Function = Invite.Show)");
                     json = {
@@ -118,8 +149,12 @@ exports.show = function(request, response) {
                     return response.status(500).json(json);
                 }
                 if(list) {
+                    var  members = [];
+                    for(var i=0; i<list.length; i++) {
+                        members.push(list[i].name);
+                    }
                     log.info({Function: "Invite.Show"}, "Fetched Association member list.");
-                    return response.status(200).json(list);
+                    return response.status(200).json(members);
                 }
                 else {
                     log.info({Function: "Invite.Show"}, "Requested association not found");

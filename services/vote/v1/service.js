@@ -73,6 +73,10 @@ module.exports = {
             name: 'verifyOtp',
             methods: require('./verifyOtp'),
             auth: 'bypass'
+        }, {
+            name: 'nominate',
+            methods: require('./nominate'),
+            auth: 'bypass'
         }
     ]
 };
