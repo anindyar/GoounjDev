@@ -14,3 +14,6 @@ ADD COLUMN `is_active` TINYINT(1) NULL DEFAULT 1 AFTER `association_id`;
 
 ALTER TABLE `goounj`.`election_user_map`
 ADD COLUMN `is_active` TINYINT(1) NULL DEFAULT 1 AFTER `association_id`;
+
+ALTER TABLE `goounj`.`vote`
+DROP COLUMN `time`;
