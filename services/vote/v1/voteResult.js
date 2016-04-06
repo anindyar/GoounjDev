@@ -37,9 +37,9 @@ exports.show = function(request, response) {
     try {
         request.getConnection(function(connectionError, connection) {
             if (connectionError != null) {
-                log.error(connectionError, "Database Connection Error (Function = Poll.Result)");
+                log.error(connectionError, "Database Connection Error (Function = VoteResult.Show)");
                 json = {
-                    error: "Poll Results failed. Database could not be reached."
+                    error: "Vote Results failed. Database could not be reached."
                 };
                 return response.status(500).json(json);
             }
@@ -53,12 +53,15 @@ exports.show = function(request, response) {
                 }
                 else {
                     if (resultSet[0]) {
-                        log.info({Function: "Poll.Result"}, "Fetched Poll Results. Poll Id: " + request.params.id);
+                        log.info({Function: "VoteResult.Show"}, "Fetched Vote Results. Poll Id: " + request.params.id);
                         return response.status(200).json(resultSet);
                     }
                     else {
-                        log.info({Function: "Poll.Result"}, "Requested Poll Result Not Found");
-                        return response.sendStatus(404);
+                        json = {
+                            message: "No votes for this election."
+                        };
+                        log.info({Function: "VoteResult.Show"}, "Requested Vote Results Not Found");
+                        return response.status(404).json(json);
                     }
                 }
             });
@@ -68,7 +71,7 @@ exports.show = function(request, response) {
         json = {
             error: "Error: " + error.message
         };
-        log.error(error, "Exception Occurred (Function = Poll.Result)");
+        log.error(error, "Exception Occurred (Function = VoteResult.Show)");
         return response.status(500).json(json);
     }
 };
