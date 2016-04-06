@@ -53,8 +53,22 @@ exports.show = function(request, response) {
                 }
                 else {
                     if (resultSet[0]) {
+                        var votes = 0;
+                        var voteObj = {}, result = [];
+                        for(var j=0; j<resultSet.length; j++) {
+                            votes += resultSet[j].votes;
+                        }
+                        for(var i=0; i<resultSet.length; i++) {
+                            voteObj = {
+                                votes: resultSet[i].votes,
+                                candidate: resultSet[i].candidate,
+                                candidateId: resultSet[i].candidateId,
+                                percentage: (resultSet[i].votes * 100)/votes + " %"
+                            };
+                            result.push(voteObj);
+                        }
                         log.info({Function: "VoteResult.Show"}, "Fetched Vote Results. Poll Id: " + request.params.id);
-                        return response.status(200).json(resultSet);
+                        return response.status(200).json(result);
                     }
                     else {
                         json = {

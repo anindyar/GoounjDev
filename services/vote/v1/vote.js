@@ -101,7 +101,7 @@ exports.create = function(request, response) {
                         json = {
                             error: "Election/Candidate does not exist."
                         };
-                        log.info({Function: "Vote.Create"}, "User voting unsuccessful.");
+                        log.info({Function: "Vote.Create"}, "User voting unsuccessful. Election/Candidate does not exist.");
                         return response.status(400).json(json);
                     }
                 });
