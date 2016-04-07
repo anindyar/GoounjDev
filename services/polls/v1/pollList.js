@@ -127,7 +127,7 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
+                var utcTimeStamp = moment(new Date()).format('DD/MM/YYYY');
 
                 if(request.body.isAnswered == 2) {
                     connection.query('CREATE OR REPLACE VIEW polls AS (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, is_answered AS isAnswered, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id INNER JOIN audience_poll_map ON poll.id = poll_id WHERE poll.end_date > ? AND user_id = ?) UNION (SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, "0" AS isAnswered, user.name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE is_generic = 1 AND poll.id NOT IN (SELECT poll_id FROM audience_poll_map WHERE user_id = ?)); (SELECT * FROM polls WHERE isAnswered = 0 AND isSurvey = 0 ORDER BY pollId DESC LIMIT ?, ?) UNION (SELECT * FROM polls WHERE isAnswered = 1 AND isSurvey = 0 ORDER BY pollId DESC LIMIT ?, ?); ', [utcTimeStamp, request.body.userId, request.body.userId, request.body.lowerLimit, request.body.upperLimit,  request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
