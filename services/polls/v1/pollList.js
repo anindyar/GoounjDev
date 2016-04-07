@@ -139,7 +139,7 @@ exports.create = function(request, response) {
                             return response.status(500).json(json);
                         }
                         else if(result) {
-                            console.log(result);
+                            log.info({Function: "PollList.Create"}, result);
                             var pollList = [], pollOBJ = {};
                             var resultList = result[1];
                             for(i = 0; i < resultList.length; i++) {
