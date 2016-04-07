@@ -141,7 +141,7 @@ exports.create = function(request, response) {
                         else if(result) {
                             var pollList = [], pollOBJ = {};
                             var resultList = result[1];
-                            for(i = 0; i < resultList.length; i++) {
+                            for(var i = 0; i < resultList.length; i++) {
 
                                 pollOBJ = {
                                     pollId: resultList[i].pollId,
