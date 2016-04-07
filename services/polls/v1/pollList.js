@@ -139,6 +139,7 @@ exports.create = function(request, response) {
                             return response.status(500).json(json);
                         }
                         else if(result) {
+                            console.log(result);
                             var pollList = [], pollOBJ = {};
                             var resultList = result[1];
                             for(i = 0; i < resultList.length; i++) {
@@ -176,9 +177,10 @@ exports.create = function(request, response) {
                             return response.status(500).json(json);
                         }
                         else if(result) {
+                            console.log(result);
                             var pollList = [], pollOBJ = {};
                             var resultList = result[1];
-                            for(i = 0; i < resultList.length; i++) {
+                            for(var i = 0; i < resultList.length; i++) {
                                 //var startDate = resultList[i].startDate.toString();
                                 //var endDate = resultList[i].endDate.toString();
 
