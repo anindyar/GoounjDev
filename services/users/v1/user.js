@@ -93,7 +93,6 @@ exports.create = function(request, response) {
             if(request.body.country != null) {
                 var countryName = request.body.country;
                 var country = countryName.trim();
-                console.log(country);
             }
 
             if(request.body.phone != null) {

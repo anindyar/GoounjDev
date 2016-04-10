@@ -37,6 +37,10 @@ module.exports = {
             name: 'searchPoll',
             methods: require('./searchPoll'),
             auth: 'bypass'
+        }, {
+            name: 'searchElection',
+            methods: require('./searchElection'),
+            auth: 'bypass'
         }
     ]
 };
