@@ -101,7 +101,7 @@ var util = require('./util');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.associationAdminId != null) && (request.body.memberIds != null)) {
+        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserId != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.associationAdminId != null) && (request.body.memberIds != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Create)");
@@ -117,7 +117,7 @@ exports.create = function(request, response) {
                 var endDate =  moment(request.body.endDate).format('YYYY/MM/DD HH:mm:ss');
                 var nominationEndDate =  moment(request.body.nominationEndDate).format('YYYY/MM/DD HH:mm:ss');
 
-                connection.query('INSERT INTO '+ config.mysql.db.name +'.election (name, created_date, start_date, end_date, nomination_end_date, vigilance_user_id, association_id) VALUES (?, ?, ?, ?, ?, (SELECT id FROM user WHERE name = ?), ?)', [request.body.electionName, utcTimeStamp, startDate, endDate, nominationEndDate, request.body.vigilanceUserName, request.body.associationId], function(queryError, entry) {
+                connection.query('INSERT INTO '+ config.mysql.db.name +'.election (name, created_date, start_date, end_date, nomination_end_date, vigilance_user_id, association_id) VALUES (?, ?, ?, ?, ?, ?, ?)', [request.body.electionName, utcTimeStamp, startDate, endDate, nominationEndDate, request.body.vigilanceUserId, request.body.associationId], function(queryError, entry) {
                     if(queryError != null) {
                         log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
                         json = {
@@ -219,7 +219,7 @@ exports.create = function(request, response) {
 exports.update = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilanceUserName != null) || (request.body.nominationEndDate != null)) {
+        if((request.body.electionName != null) || (request.body.startDate != null) || (request.body.endDate != null) || (request.body.vigilanceUserId != null) || (request.body.nominationEndDate != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Update)");
@@ -248,8 +248,8 @@ exports.update = function(request, response) {
                         if(request.body.endDate != null) {
                             jsonData['end_date'] = moment(request.endDate).format('YYYY/MM/DD HH:mm:ss');
                         }
-                        if(request.body.vigilanceUserName != null) {
-                            jsonData['vigilance_user_id'] = request.body.vigilanceUserName;
+                        if(request.body.vigilanceUserId != null) {
+                            jsonData['vigilance_user_id'] = request.body.vigilanceUserId;
                         }
                         if(request.body.nominationEndDate != null) {
                             jsonData['nomination_end_date'] = moment(request.body.nominationEndDate).format('YYYY/MM/DD HH:mm:ss');
@@ -276,7 +276,7 @@ exports.update = function(request, response) {
                 });
             });
         }
-        else if(request.body.memberIds != null) {
+        if(request.body.memberIds != null) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Update)");
