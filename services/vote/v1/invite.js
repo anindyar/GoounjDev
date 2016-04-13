@@ -34,7 +34,7 @@ exports.create = function(request, response) {
     var json;
     var memberList = [];
     try {
-        if(request.body.associationId != null && request.body.members != null) {
+        if(request.body.associationId != null && request.body.memberIds != null) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Invite.Create)");
@@ -54,11 +54,11 @@ exports.create = function(request, response) {
                     }
                     if(item.length != 0) {
                         var count = 0;
-                        memberList = request.body.members;
+                        memberList = request.body.memberIds;
                         for(var i = 0; i < memberList.length; i++) {
                             (function () {
                                 var iCopy = i;
-                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?) AND association_id = ?', [memberList[iCopy], request.body.associationid], function(queryError, check) {
+                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = ? AND association_id = ?',  [memberList[iCopy], request.body.associationId], function(queryError, find) {
                                     if(queryError != null) {
                                         log.error(queryError, "Query error. (Function: Invite.Create)");
                                         json  = {
@@ -66,8 +66,15 @@ exports.create = function(request, response) {
                                         };
                                         return response.status(500).json(json);
                                     }
-                                    if(check.length == 0) {
-                                        connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?) AND association_id = ?',  [memberList[iCopy], request.body.associationId], function(queryError, find) {
+                                    if(find.length != 0) {
+                                        log.info({Function: "Invite.Create"}, "user ID: " + memberList[iCopy] + " is already a member");
+
+                                        if(iCopy == memberList.length - 1) {
+                                            return response.sendStatus(200);
+                                        }
+                                    }
+                                    else {
+                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.association_user_map (user_id, association_id) VALUES (?, ?)', [memberList[iCopy], request.body.associationId], function(queryError, fill) {
                                             if(queryError != null) {
                                                 log.error(queryError, "Query error. (Function: Invite.Create)");
                                                 json  = {
@@ -75,32 +82,12 @@ exports.create = function(request, response) {
                                                 };
                                                 return response.status(500).json(json);
                                             }
-                                            else if(find.length != 0) {
-                                                log.info({Function: "Invite.Create"}, memberList[iCopy] + " is already a member");
-
-                                                if(iCopy == memberList.length - 1 && count == 0) {
-                                                    log.info({Function: "Invite.Create"}, "No new members.");
+                                            else {
+                                                log.info({Function: "Invite.Create"}, "adding user ID: " + memberList[iCopy]);
+                                                count++;
+                                                if(iCopy == memberList.length - 1) {
                                                     return response.sendStatus(200);
                                                 }
-                                            }
-                                            else {
-                                                connection.query('INSERT INTO '+ config.mysql.db.name +'.association_user_map (user_id, association_id) VALUES ((SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?), ?)', [memberList[iCopy], request.body.associationId], function(queryError, fill) {
-                                                    if(queryError != null) {
-                                                        log.error(queryError, "Query error. (Function: Invite.Create)");
-                                                        json  = {
-                                                            error: "Query error. Failed to add association members."
-                                                        };
-                                                        return response.status(500).json(json);
-                                                    }
-                                                    else {
-                                                        log.info({Function: "Invite.Create"}, "adding members..");
-                                                        count++;
-                                                        if(iCopy == memberList.length - 1) {
-                                                            log.info({Function: "Invite.Create"}, count + " members added.");
-                                                            return response.sendStatus(200);
-                                                        }
-                                                    }
-                                                });
                                             }
                                         });
                                     }
