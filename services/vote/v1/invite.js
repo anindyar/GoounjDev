@@ -53,10 +53,10 @@ exports.create = function(request, response) {
                         return response.status(500).json(json);
                     }
                     if(item.length != 0) {
-                        var count = 0;
                         memberList = request.body.memberIds;
                         for(var i = 0; i < memberList.length; i++) {
                             (function () {
+                                var count = 0;
                                 var iCopy = i;
                                 connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = ? AND association_id = ?',  [memberList[iCopy], request.body.associationId], function(queryError, find) {
                                     if(queryError != null) {
@@ -68,7 +68,6 @@ exports.create = function(request, response) {
                                     }
                                     if(find.length != 0) {
                                         log.info({Function: "Invite.Create"}, "user ID: " + memberList[iCopy] + " is already a member");
-
                                         if(iCopy == memberList.length - 1) {
                                             return response.sendStatus(200);
                                         }
@@ -83,8 +82,8 @@ exports.create = function(request, response) {
                                                 return response.status(500).json(json);
                                             }
                                             else {
-                                                log.info({Function: "Invite.Create"}, "adding user ID: " + memberList[iCopy]);
                                                 count++;
+                                                log.info({Function: "Invite.Create"}, "adding user ID: " + memberList[iCopy]);
                                                 if(iCopy == memberList.length - 1) {
                                                     return response.sendStatus(200);
                                                 }

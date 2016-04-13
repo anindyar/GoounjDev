@@ -101,7 +101,7 @@ var util = require('./util');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.associationAdminId != null) && (request.body.members != null)) {
+        if((request.body.electionName != null) && (request.body.startDate != null) && (request.body.endDate != null) && (request.body.vigilanceUserName != null) && (request.body.nominationEndDate != null) && (request.body.associationId != null) && (request.body.associationAdminId != null) && (request.body.memberIds != null)) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Create)");
@@ -136,9 +136,9 @@ exports.create = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             if(mapping) {
-                                var memberList = request.body.members;
+                                var memberList = request.body.memberIds;
                                 for(var i = 0; i < memberList.length; i++){
-                                    connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [electionID, request.body.associationId, memberList[i]], function(queryError, check) {
+                                    connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, ?, ?)', [electionID, request.body.associationId, memberList[i]], function(queryError, check) {
                                         if (queryError != null) {
                                             log.error(queryError, "Query error. Failed to create an election. (Function = Election.Create)");
                                             json = {
@@ -276,7 +276,7 @@ exports.update = function(request, response) {
                 });
             });
         }
-        else if(request.body.members != null) {
+        else if(request.body.memberIds != null) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database connection error (Function = Election.Update)");
@@ -285,12 +285,12 @@ exports.update = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                var memberList = request.body.members;
+                var memberList = request.body.memberIds;
                 var count = 0;
                 for(var i = 0; i < memberList.length; i++){
                     (function () {
                         var iCopy = i;
-                        connection.query('SELECT * FROM '+ config.mysql.db.name +'.election_user_map WHERE election_id = ? AND user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?)', [request.params.id, memberList[iCopy]], function(queryError, check) {
+                        connection.query('SELECT * FROM '+ config.mysql.db.name +'.election_user_map WHERE election_id = ? AND user_id = ?', [request.params.id, memberList[iCopy]], function(queryError, check) {
                             if (queryError != null) {
                                 log.error(queryError, "Query error. Failed to create an election. (Function = Election.Update)");
                                 json = {
@@ -299,16 +299,14 @@ exports.update = function(request, response) {
                                 return response.status(500).json(json);
                             }
                             else if(check.length != 0) {
-                                log.info({Function: "Election.Update"}, memberList[iCopy] + " is already eligible");
-
-                                if(iCopy == memberList.length - 1 && count == 0) {
-                                    log.info({Function: "Election.Update"}, "No new members.");
+                                log.info({Function: "Election.Update"}, "user ID : " + memberList[iCopy] + " is already eligible");
+                                if(iCopy == memberList.length - 1) {
                                     log.info({Function: "Election.Update"}, "Election update successful. Election ID: " + request.params.id);
                                     util.election(request, connection, response);
                                 }
                             }
                             else if(check.length == 0) {
-                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE association_id = (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?) AND user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?)', [request.params.id, memberList[iCopy]], function(queryError, memberCheck) {
+                                connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE association_id = (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?) AND user_id = ?', [request.params.id, memberList[iCopy]], function(queryError, memberCheck) {
                                     if (queryError != null) {
                                         log.error(queryError, "Query error. Failed to update an election. (Function = Election.Update)");
                                         json = {
@@ -317,7 +315,7 @@ exports.update = function(request, response) {
                                         return response.status(500).json(json);
                                     }
                                     else if(memberCheck.length != 0) {
-                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), (SELECT id FROM '+ config.mysql.db.name +'.user WHERE name = ?))', [request.params.id, request.params.id, memberList[iCopy]], function(queryError, check) {
+                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.election_user_map (election_id, association_id, user_id) VALUES (?, (SELECT association_id FROM '+ config.mysql.db.name +'.election WHERE id = ?), ?)', [request.params.id, request.params.id, memberList[iCopy]], function(queryError, check) {
                                             if (queryError != null) {
                                                 log.error(queryError, "Query error. Failed to update an election. (Function = Election.Update)");
                                                 json = {
@@ -326,10 +324,9 @@ exports.update = function(request, response) {
                                                 return response.status(500).json(json);
                                             }
                                             else {
-                                                log.info({Function: "Election.Update"}, "adding voting members..");
                                                 count++;
+                                                log.info({Function: "Election.Update"}, "adding user ID : " + memberList[iCopy]);
                                                 if(iCopy == memberList.length - 1) {
-                                                    log.info({Function: "Election.Update"}, count + " members added.");
                                                     log.info({Function: "Election.Update"}, "Election update successful. Election ID: " + request.params.id);
                                                     util.election(request, connection, response);
                                                 }
