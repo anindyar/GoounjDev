@@ -378,7 +378,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdminId, (SELECT name FROM user WHERE id = association.admin_id) AS associationAdminName,  COUNT(association_user_map.user_id) AS memberTotal FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ? AND is_active = ?', [request.params.id, "1"], function(queryError, result) {
+            connection.query('SELECT association.name AS associationName, association.admin_id AS associationAdminId, (SELECT name FROM user WHERE id = association.admin_id) AS associationAdminName,  COUNT(association_user_map.user_id) AS memberTotal FROM association INNER JOIN association_user_map ON association.id = association_user_map.association_id WHERE association.id = ? AND association.is_active = ?', [request.params.id, "1"], function(queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query Error. Failed To Show an Association. Association ID: " + request.params.id + " (Function = Association.Show)");
                     json = {
