@@ -134,7 +134,7 @@ exports.create = function(request, response) {
                         }
                     }
                     else if(candidates.length == 0) {
-                        connection.query('INSERT INTO '+ config.mysql.db.name +'.candidate (user_id, election_id, name, nick_name, about, manifesto) VALUES (?, ?, ?, ?, ?, ?)', [request.body.userId, request.body.electionId, request.body.userName, request.body.nickName, request.body.about, request.body.manifesto], function(queryError, entry) {
+                        connection.query('INSERT INTO '+ config.mysql.db.name +'.candidate (user_id, election_id, name, nick_name, about, manifesto, is_active) VALUES (?, ?, ?, ?, ?, ?, "1")', [request.body.userId, request.body.electionId, request.body.userName, request.body.nickName, request.body.about, request.body.manifesto], function(queryError, entry) {
                             if(queryError != null) {
                                 log.error(queryError, "Query error. (Function: Candidate.Create)");
                                 json  = {
