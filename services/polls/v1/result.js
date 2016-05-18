@@ -134,7 +134,7 @@ exports.show = function(request, response) {
     try {
         request.getConnection(function(connectionError, connection) {
             if (connectionError != null) {
-                log.error(connectionError, "Database Connection Error (Function = Poll.Result)");
+                log.error(connectionError, "Database Connection Error (Function = Result.Show)");
                 json = {
                     error: "Poll Results failed. Database could not be reached."
                 };
@@ -142,7 +142,7 @@ exports.show = function(request, response) {
             }
             connection.query('SELECT poll.poll_name AS pollName,(SELECT name FROM category WHERE id = (SELECT category_id FROM category_poll_map WHERE poll_id = poll.id)) AS category, poll.created_user_id AS createdUserId, question.question AS question, question_options.`option` AS choices, COUNT(answer.question_options_id) AS resultCount FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id RIGHT JOIN answer ON (answer.question_id = question.id) AND (answer.question_options_id = question_options.id) WHERE poll.id = ? GROUP BY answer.question_options_id;', request.params.id, function(queryError, resultSet) {
                 if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                    log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Result.Show)");
                     json = {
                         error: "Requested action failed. Database could not be reached."
                     };
@@ -153,7 +153,7 @@ exports.show = function(request, response) {
                         var choiceObj,jsonOutput,questionObj = {};
                         connection.query('SELECT question.question AS question, question_options.`option` AS choices FROM poll INNER JOIN question ON question.poll_id = poll.id INNER JOIN question_options ON question_options.question_id = question.id WHERE poll.id = ?', request.params.id, function(queryError, choice) {
                             if (queryError != null) {
-                                log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Poll.Result)");
+                                log.error(queryError, "Query error. Failed to fetch poll results. Poll Result details " + JSON.stringify(request.params.id) + "(Function = Result.Show)");
                                 json = {
                                     error: "Requested action failed. Database could not be reached."
                                 };
@@ -236,7 +236,7 @@ exports.show = function(request, response) {
                                     questions[i].totalCount = totalCount;
                                 }
 
-                                log.info({Function: "Poll.Result"}, "Fetched Poll Results. Poll Id: " + request.params.id);
+                                log.info({Function: "Result.Show"}, "Fetched Poll Results. Poll Id: " + request.params.id);
                                 return response.status(200).json(jsonOutput);
                             }
                         });
@@ -245,7 +245,7 @@ exports.show = function(request, response) {
                         json = {
                             error: "No Results for the requested poll!"
                         };
-                        log.info({Function: "Poll.Result"}, "Requested Poll Result Not Found");
+                        log.info({Function: "Result.Show"}, "Requested Poll Result Not Found");
                         return response.status(404).json(json);
                     }
                 }
@@ -256,7 +256,7 @@ exports.show = function(request, response) {
         json = {
             error: "Error: " + error.message
         };
-        log.error(error, "Exception Occurred (Function = Poll.Result)");
+        log.error(error, "Exception Occurred (Function = Result.Show)");
         return response.status(500).json(json);
     }
 };
