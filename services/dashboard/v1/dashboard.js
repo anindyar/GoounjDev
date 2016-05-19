@@ -18,7 +18,6 @@ exports.show = function(request, response){
             }
             else {
                 var polls = [], surveys = [], elections = [];
-                var totalElections;
                 connection.query('SELECT * FROM user WHERE id = ?', request.params.id, function(queryError, user) {
                     if (queryError != null) {
                         log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
@@ -28,7 +27,7 @@ exports.show = function(request, response){
                         return response.status(500).json(json);
                     }
                     else if(user[0]) {
-                        connection.query('(SELECT id AS pollId, poll_name AS pollName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 0) AS totalPolls, is_survey AS isSurvey FROM poll WHERE is_survey = 0 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5) UNION (SELECT id AS pollId, poll_name AS pollName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 1) AS totalSurveys, is_survey AS isSurvey FROM poll WHERE is_survey = 1 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5);', [request.params.id, request.params.id, request.params.id, request.params.id], function(queryError, pollAndSurvey) {
+                        connection.query('(SELECT id AS pollId, poll_name AS pollName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 0) AS totalPolls, is_survey AS isSurvey FROM poll WHERE is_survey = 0 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5) UNION (SELECT id AS surveyId, poll_name AS surveyName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 1) AS totalSurveys, is_survey AS isSurvey FROM poll WHERE is_survey = 1 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5);', [request.params.id, request.params.id, request.params.id, request.params.id], function(queryError, pollAndSurvey) {
                             if (queryError != null) {
                                 log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
                                 json = {
@@ -49,7 +48,7 @@ exports.show = function(request, response){
                                         }
                                     }
 
-                                    connection.query('SELECT id FROM association WHERE admin_id = ?', [request.params.id], function(queryError, associations) {
+                                    connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC LIMIT 5', [request.params.id, request.params.id], function(queryError, elections) {
                                         if (queryError != null) {
                                             log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
                                             json = {
@@ -57,49 +56,15 @@ exports.show = function(request, response){
                                             };
                                             return response.status(500).json(json);
                                         }
-                                        if(associations[0]) {
-                                            for(var j=0; j<associations.length; j++) {
-                                                (function() {
-                                                    var jCopy = j;
-                                                    connection.query('SELECT id AS electionId, name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(id) FROM election WHERE association_id = ?) AS noOfElections FROM election WHERE association_id = ?', [associations[jCopy].id, associations[jCopy].id], function(queryError, election) {
-                                                        if (queryError != null) {
-                                                            log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
-                                                            json = {
-                                                                error: "Requested action failed. Database could not be reached."
-                                                            };
-                                                            return response.status(500).json(json);
-                                                        }
-                                                        else if(election) {
-                                                            if(election[0]) {
-                                                                for(var k=0; k<election.length; k++) {
-                                                                    elections.push(election[k]);
-                                                                    totalElections =+ election[k].noOfElections
-                                                                }
-                                                            }
-                                                            if(jCopy == associations.length - 1) {
-                                                                json = {
-                                                                    polls: polls,
-                                                                    surveys: surveys,
-                                                                    elections: elections,
-                                                                    totalElections: totalElections
-                                                                };
-                                                                log.info({Function: "Dashboard.Show"}, "Dashboard items fetched");
-                                                                return response.status(200).json(json);
-                                                            }
-                                                        }
-                                                    });
-                                                }());
-                                            }
-                                        }
-                                        else {
+                                        else if(elections) {
                                             json = {
                                                 polls: polls,
                                                 surveys: surveys,
-                                                elections: elections,
-                                                totalElections: totalElections
+                                                elections: elections
                                             };
                                             log.info({Function: "Dashboard.Show"}, "Dashboard items fetched");
                                             return response.status(200).json(json);
+
                                         }
                                     });
                                 }
