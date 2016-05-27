@@ -126,7 +126,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT name FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, list) {
+            connection.query('SELECT user.id, user.email, user.phone, user.country, user.name, user.is_active  FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ?', request.params.id, function(queryError, list) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to create an election. (Function = Invite.Show)");
                     json = {
@@ -135,12 +135,13 @@ exports.show = function(request, response) {
                     return response.status(500).json(json);
                 }
                 if(list) {
-                    var  members = [];
                     for(var i=0; i<list.length; i++) {
-                        members.push(list[i].name);
+                        if(list[i].email == null) {
+                            list[i].email = "";
+                        }
                     }
                     log.info({Function: "Invite.Show"}, "Fetched Association member list.");
-                    return response.status(200).json(members);
+                    return response.status(200).json(list);
                 }
                 else {
                     log.info({Function: "Invite.Show"}, "Requested association not found");
