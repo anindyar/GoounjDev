@@ -17,7 +17,7 @@ exports.show = function(request, response){
                 return response.status(500).json(json);
             }
             else {
-                var polls = [], surveys = [], elections = [];
+                var polls = [], surveys = [];
                 connection.query('SELECT * FROM user WHERE id = ?', request.params.id, function(queryError, user) {
                     if (queryError != null) {
                         log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
@@ -64,7 +64,6 @@ exports.show = function(request, response){
                                             };
                                             log.info({Function: "Dashboard.Show"}, "Dashboard items fetched");
                                             return response.status(200).json(json);
-
                                         }
                                     });
                                 }

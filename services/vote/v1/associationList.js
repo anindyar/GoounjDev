@@ -99,7 +99,7 @@ var log = require('./../../../log');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.userId !== null) && (request.body.lowerLimit != null) && (request.body.upperLimit != null)) {
+        if(request.body.userId !== null) {
             request.getConnection(function (connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = associationList.Create)");
@@ -109,23 +109,45 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
 
-                connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ? LIMIT ?, ?', ["1", request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
-                    if (queryError != null) {
-                        log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
-                        json = {
-                            error: "Requested action failed. Database could not be reached."
-                        };
-                        return response.status(500).json(json);
-                    }
-                    else if(result[0]) {
-                        log.info({Function: "associationList.Create"}, "Fetched Association List.");
-                        return response.status(200).json(result);
-                    }
-                    else {
-                        log.info({Function: "associationList.Create"}, "No associations found.");
-                        return response.sendStatus(404);
-                    }
-                });
+                if(request.body.lowerLimit == null && request.body.upperLimit == null) {
+                    connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ? LIMIT ?, ?', ["1", request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
+                        if (queryError != null) {
+                            log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
+                            json = {
+                                error: "Requested action failed. Database could not be reached."
+                            };
+                            return response.status(500).json(json);
+                        }
+                        else if(result[0]) {
+                            log.info({Function: "associationList.Create"}, "Fetched Association List.");
+                            return response.status(200).json(result);
+                        }
+                        else {
+                            log.info({Function: "associationList.Create"}, "No associations found.");
+                            return response.sendStatus(404);
+                        }
+                    });
+                }
+                else {
+                    connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ?', ["1", request.body.userId], function(queryError, result) {
+                        if (queryError != null) {
+                            log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
+                            json = {
+                                error: "Requested action failed. Database could not be reached."
+                            };
+                            return response.status(500).json(json);
+                        }
+                        else if(result[0]) {
+                            log.info({Function: "associationList.Create"}, "Fetched Association List.");
+                            return response.status(200).json(result);
+                        }
+                        else {
+                            log.info({Function: "associationList.Create"}, "No associations found.");
+                            return response.sendStatus(404);
+                        }
+                    });
+                }
+
             });
         }
     }
@@ -176,7 +198,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT name FROM association WHERE admin_id = ? AND is_active = ?', [request.params.id, "1"], function(queryError, result) {
+            connection.query('SELECT id, name FROM association WHERE admin_id = ? AND is_active = ?', [request.params.id, "1"], function(queryError, result) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch poll list. Details " + JSON.stringify(request.params.id) + "(Function = associationList.Show)");
                     json = {
@@ -185,15 +207,8 @@ exports.show = function(request, response) {
                     return response.status(500).json(json);
                 }
                 else if(result[0]) {
-                    var associations = [];
-                    var json = {
-                        associations: associations
-                    };
-                    for(i = 0; i < result.length; i++) {
-                        associations.push(result[i].name);
-                    }
                     log.info({Function: "associationList.Show"}, "Fetched Association List.");
-                    return response.status(200).json(json);
+                    return response.status(200).json(result);
                 }
                 else {
                     log.info({Function: "associationList.Show"}, "Requested UserId not found.");

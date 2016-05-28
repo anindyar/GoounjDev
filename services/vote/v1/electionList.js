@@ -95,7 +95,7 @@ var log = require('./../../../log');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.userId != null) && (request.body.upperLimit != null) && (request.body.lowerLimit != null) && (request.body.isVoted != null)) {
+        if((request.body.userId != null)  && (request.body.isVoted != null)) {
             request.getConnection(function(connectionError, connection) {
                 if (connectionError != null) {
                     log.error(connectionError, "Database Connection Error (Function = ElectionList.Create)");
@@ -104,78 +104,155 @@ exports.create = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                if (request.body.isVoted == 2) {
-                    connection.query('(SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 0 LIMIT ?, ?) UNION (SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 1 LIMIT ?, ?)', [request.body.userId, request.body.lowerLimit, request.body.upperLimit, request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
-                        if (queryError != null) {
-                            log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
-                            json = {
-                                error: "Requested action failed. Database could not be reached."
-                            };
-                            return response.status(500).json(json);
-                        }
-                        else if(list) {
-                            var electionOBJ = {}, electionList = [];
-                            for(i = 0; i < list.length; i++) {
-                                var startDate = list[i].startDate;
-                                var endDate = list[i].endDate;
-                                var nominationEndDate = list[i].nominationEndDate;
-
-                                electionOBJ = {
-                                    electionId: list[i].electionId,
-                                    electionName: list[i].electionName,
-                                    startDate: startDate,
-                                    endDate: endDate,
-                                    nominationEndDate: nominationEndDate,
-                                    associationName: list[i].associationName,
-                                    isVoted: list[i].isVoted
+                if((request.body.upperLimit != null) && (request.body.lowerLimit != null)) {
+                    if (request.body.isVoted == 2) {
+                        connection.query('(SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 0 LIMIT ?, ?) UNION (SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 1 LIMIT ?, ?)', [request.body.userId, request.body.lowerLimit, request.body.upperLimit, request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
                                 };
-                                electionList.push(electionOBJ);
+                                return response.status(500).json(json);
                             }
-                            log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
-                            return response.status(200).json(electionList);
-                        }
-                        else {
-                            log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
-                            return response.sendStatus(404);
-                        }
-                    });
-                }
-                if(request.body.isVoted == 0 || request.body.isVoted == 1) {
-                    connection.query('SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = ? LIMIT ?, ?', [request.body.userId, request.body.isVoted, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
-                        if (queryError != null) {
-                            log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
-                            json = {
-                                error: "Requested action failed. Database could not be reached."
-                            };
-                            return response.status(500).json(json);
-                        }
-                        else if(list) {
-                            var electionOBJ = {}, electionList = [];
-                            for(i = 0; i < list.length; i++) {
-                                var startDate = list[i].startDate;
-                                var endDate = list[i].endDate;
-                                var nominationEndDate = list[i].nominationEndDate;
+                            else if(list) {
+                                var electionOBJ = {}, electionList = [];
+                                for(i = 0; i < list.length; i++) {
+                                    var startDate = list[i].startDate;
+                                    var endDate = list[i].endDate;
+                                    var nominationEndDate = list[i].nominationEndDate;
 
-                                electionOBJ = {
-                                    electionId: list[i].electionId,
-                                    electionName: list[i].electionName,
-                                    startDate: startDate,
-                                    endDate: endDate,
-                                    nominationEndDate: nominationEndDate,
-                                    associationName: list[i].associationName,
-                                    isVoted: list[i].isVoted
-                                };
-                                electionList.push(electionOBJ);
+                                    electionOBJ = {
+                                        electionId: list[i].electionId,
+                                        electionName: list[i].electionName,
+                                        startDate: startDate,
+                                        endDate: endDate,
+                                        nominationEndDate: nominationEndDate,
+                                        associationName: list[i].associationName,
+                                        isVoted: list[i].isVoted
+                                    };
+                                    electionList.push(electionOBJ);
+                                }
+                                log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
+                                return response.status(200).json(electionList);
                             }
-                            log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
-                            return response.status(200).json(electionList);
-                        }
-                        else {
-                            log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
-                            return response.sendStatus(404);
-                        }
-                    });
+                            else {
+                                log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
+                                return response.sendStatus(404);
+                            }
+                        });
+                    }
+                    if(request.body.isVoted == 0 || request.body.isVoted == 1) {
+                        connection.query('SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = ? LIMIT ?, ?', [request.body.userId, request.body.isVoted, request.body.lowerLimit, request.body.upperLimit], function(queryError, list) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                            else if(list) {
+                                var electionOBJ = {}, electionList = [];
+                                for(i = 0; i < list.length; i++) {
+                                    var startDate = list[i].startDate;
+                                    var endDate = list[i].endDate;
+                                    var nominationEndDate = list[i].nominationEndDate;
+
+                                    electionOBJ = {
+                                        electionId: list[i].electionId,
+                                        electionName: list[i].electionName,
+                                        startDate: startDate,
+                                        endDate: endDate,
+                                        nominationEndDate: nominationEndDate,
+                                        associationName: list[i].associationName,
+                                        isVoted: list[i].isVoted
+                                    };
+                                    electionList.push(electionOBJ);
+                                }
+                                log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
+                                return response.status(200).json(electionList);
+                            }
+                            else {
+                                log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
+                                return response.sendStatus(404);
+                            }
+                        });
+                    }
                 }
+                else {
+                    if (request.body.isVoted == 2) {
+                        connection.query('(SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 0) UNION (SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = 1)', [request.body.userId, request.body.userId], function(queryError, list) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                            else if(list) {
+                                var electionOBJ = {}, electionList = [];
+                                for(i = 0; i < list.length; i++) {
+                                    var startDate = list[i].startDate;
+                                    var endDate = list[i].endDate;
+                                    var nominationEndDate = list[i].nominationEndDate;
+
+                                    electionOBJ = {
+                                        electionId: list[i].electionId,
+                                        electionName: list[i].electionName,
+                                        startDate: startDate,
+                                        endDate: endDate,
+                                        nominationEndDate: nominationEndDate,
+                                        associationName: list[i].associationName,
+                                        isVoted: list[i].isVoted
+                                    };
+                                    electionList.push(electionOBJ);
+                                }
+                                log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
+                                return response.status(200).json(electionList);
+                            }
+                            else {
+                                log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
+                                return response.sendStatus(404);
+                            }
+                        });
+                    }
+                    if(request.body.isVoted == 0 || request.body.isVoted == 1) {
+                        connection.query('SELECT election.id AS electionId, election.name AS electionName, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, association.name AS associationName, is_voted AS isVoted FROM election_user_map INNER JOIN election ON election_id = election.id INNER JOIN association ON association.id = election.association_id WHERE user_id = ? AND is_voted = ?', [request.body.userId, request.body.isVoted], function(queryError, list) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Create)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                            else if(list) {
+                                var electionOBJ = {}, electionList = [];
+                                for(i = 0; i < list.length; i++) {
+                                    var startDate = list[i].startDate;
+                                    var endDate = list[i].endDate;
+                                    var nominationEndDate = list[i].nominationEndDate;
+
+                                    electionOBJ = {
+                                        electionId: list[i].electionId,
+                                        electionName: list[i].electionName,
+                                        startDate: startDate,
+                                        endDate: endDate,
+                                        nominationEndDate: nominationEndDate,
+                                        associationName: list[i].associationName,
+                                        isVoted: list[i].isVoted
+                                    };
+                                    electionList.push(electionOBJ);
+                                }
+                                log.info({Function: "ElectionList.Create"}, "Fetched Election List.");
+                                return response.status(200).json(electionList);
+                            }
+                            else {
+                                log.info({Function: "ElectionList.Create"}, "Requested UserId not found.");
+                                return response.sendStatus(404);
+                            }
+                        });
+                    }
+                }
+
             });
         }
     }
@@ -184,6 +261,42 @@ exports.create = function(request, response) {
             error: "Error: " + error.message
         };
         log.error(error, "Exception Occurred (Function = ElectionList.Create)");
+        return response.status(500).json(json);
+    }
+};
+
+
+exports.show = function(request, response) {
+    var json;
+    try {
+        request.getConnection(function(connectionError, connection) {
+            if (connectionError != null) {
+                log.error(connectionError, "Database Connection Error (Function = ElectionList.Show)");
+                json = {
+                    error: "PollList.Create failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC', [request.params.id, request.params.id], function(queryError, list) {
+                if (queryError != null) {
+                    log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Show)");
+                    json = {
+                        error: "Requested action failed. Database could not be reached."
+                    };
+                    return response.status(500).json(json);
+                }
+                else {
+                    log.info({Function: "ElectionList.Show"}, "Requested UserId not found.");
+                    return response.status(200).json(list);
+                }
+            });
+        });
+    }
+    catch(error) {
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception Occurred (Function = ElectionList.Show)");
         return response.status(500).json(json);
     }
 };
