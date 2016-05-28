@@ -265,11 +265,10 @@ exports.create = function(request, response) {
     }
 };
 
-
 exports.show = function(request, response) {
     var json;
     try {
-        request.getConnection(function(connectionError, connection) {
+        request.getConnection(function (connectionError, connection) {
             if (connectionError != null) {
                 log.error(connectionError, "Database Connection Error (Function = ElectionList.Show)");
                 json = {
@@ -277,7 +276,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC', [request.params.id, request.params.id], function(queryError, list) {
+            connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC', [request.params.id, request.params.id], function (queryError, list) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Show)");
                     json = {
@@ -292,11 +291,15 @@ exports.show = function(request, response) {
             });
         });
     }
-    catch(error) {
+    catch (error) {
         json = {
             error: "Error: " + error.message
         };
         log.error(error, "Exception Occurred (Function = ElectionList.Show)");
         return response.status(500).json(json);
     }
+};
+
+exports.options = function(request, response) {
+    return response.sendStatus(200);
 };
