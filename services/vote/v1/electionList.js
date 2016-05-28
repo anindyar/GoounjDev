@@ -187,3 +187,7 @@ exports.create = function(request, response) {
         return response.status(500).json(json);
     }
 };
+
+exports.options = function(request, response) {
+    return response.sendStatus(200);
+};
