@@ -76,7 +76,7 @@ exports.show = function(request, response) {
                                             electionList.push(electionObj);
                                             if(kCopy == list.length - 1) {
                                                 log.info({Function: "ElectionListByAssociation.Show"}, "Details of elections for a given association");
-                                                return response.status(404).json(electionList);
+                                                return response.status(200).json(electionList);
                                             }
                                         }
                                     }
@@ -99,7 +99,7 @@ exports.show = function(request, response) {
                                         electionList.push(electionObj);
                                         if(kCopy == list.length - 1) {
                                             log.info({Function: "ElectionListByAssociation.Show"}, "Details of elections for a given association");
-                                            return response.status(404).json(electionList);
+                                            return response.status(200).json(electionList);
                                         }
                                     }
                                 }
