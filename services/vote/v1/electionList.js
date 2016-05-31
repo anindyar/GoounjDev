@@ -276,7 +276,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections, (SELECT COUNT(vote.id) FROM vote JOIN election ON election.id = vote.election_id WHERE election.id = electionId GROUP BY election.id) AS votesForThisElection FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC', [request.params.id, request.params.id], function (queryError, list) {
+            connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections, (SELECT COUNT(vote.id) FROM vote JOIN election ON election.id = vote.election_id WHERE election.id = electionId GROUP BY election.id) AS voteCount, (SELECT COUNT()) AS eligibleToVote FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC', [request.params.id, request.params.id], function (queryError, list) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch election list. Details " + JSON.stringify(request.body.userId) + "(Function = ElectionList.Show)");
                     json = {
@@ -286,8 +286,8 @@ exports.show = function(request, response) {
                 }
                 else {
                     for(var i=0; i<list.length; i++) {
-                        if(list[i].votesForThisElection == null) {
-                            list[i].votesForThisElection = 0;
+                        if(list[i].voteCount == null) {
+                            list[i].voteCount = 0;
                         }
                     }
                     log.info({Function: "ElectionList.Show"}, "Requested UserId not found.");

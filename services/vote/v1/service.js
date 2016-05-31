@@ -77,6 +77,10 @@ module.exports = {
             name: 'nominate',
             methods: require('./nominate'),
             auth: 'bypass'
+        }, {
+            name: 'electionListByAssociation',
+            methods: require('./electionListByAssociation'),
+            auth: 'bypass'
         }
     ]
 };

@@ -116,19 +116,19 @@ var moment = require('moment');
 exports.create = function(request, response) {
     var json;
     try {
-        if((request.body.lowerLimit != null) && (request.body.upperLimit != null)) {
-            request.getConnection(function (connectionError, connection) {
-                if (connectionError != null) {
-                    log.error(connectionError, "Database Connection Error (Function = SurveyList.Create)");
-                    json = {
-                        error: "SurveyList.Create failed. Database could not be reached."
-                    };
-                    return response.status(500).json(json);
-                }
-                var utcTimeStamp = moment(new Date()).format('DD/MM/YYYY');
+        request.getConnection(function (connectionError, connection) {
+            if (connectionError != null) {
+                log.error(connectionError, "Database Connection Error (Function = SurveyList.Create)");
+                json = {
+                    error: "SurveyList.Create failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD');
+            if((request.body.lowerLimit != null) && (request.body.upperLimit != null)) {
                 connection.query('SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, created_user_id AS createdUserId, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE poll.end_date > ? AND is_survey = 1 ORDER BY pollId DESC LIMIT ?, ?', [utcTimeStamp, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
                     if (queryError != null) {
-                        log.error(queryError, "Query error. Failed to fetch survey list. Details " + JSON.stringify(request.body.userId) + "(Function = SurveyList.Create)");
+                        log.error(queryError, "Query error. Failed to fetch survey list. (Function = SurveyList.Create)");
                         json = {
                             error: "Requested action failed. Database could not be reached."
                         };
@@ -161,8 +161,45 @@ exports.create = function(request, response) {
                         return response.sendStatus(404);
                     }
                 });
-            });
-        }
+            }
+            else {
+                connection.query('SELECT poll.id AS pollId, start_date AS startDate, end_date AS endDate, poll_name AS pollName, is_survey AS isSurvey, is_boost AS isBoost, poll.is_active AS isActive, is_generic AS isGeneric, created_user_id AS createdUserId, name AS createdUserName  FROM poll INNER JOIN user ON poll.created_user_id = user.id WHERE poll.end_date > ? AND is_survey = 1 ORDER BY pollId DESC', utcTimeStamp, function(queryError, result) {
+                    if (queryError != null) {
+                        log.error(queryError, "Query error. Failed to fetch survey list. (Function = SurveyList.Create)");
+                        json = {
+                            error: "Requested action failed. Database could not be reached."
+                        };
+                        return response.status(500).json(json);
+                    }
+                    else if(result) {
+                        var pollList = [], pollOBJ = {};
+                        for(i = 0; i < result.length; i++) {
+
+                            pollOBJ = {
+                                pollId: result[i].pollId,
+                                startDate: result[i].startDate,
+                                endDate: result[i].endDate,
+                                pollName: result[i].pollName,
+                                isSurvey: result[i].isSurvey,
+                                isBoost: result[i].isBoost,
+                                isGeneric: result[i].isGeneric,
+                                isActive: result[i].isActive,
+                                isAnswered: result[i].isAnswered,
+                                createdUserId: result[i].createdUserId,
+                                createdUserName: result[i].createdUserName
+                            };
+                            pollList.push(pollOBJ);
+                        }
+                        log.info({Function: "SurveyList.Create"}, "Fetched Poll List.");
+                        return response.status(200).json(result);
+                    }
+                    else {
+                        log.info({Function: "SurveyList.Create"}, "Requested UserId not found.");
+                        return response.sendStatus(404);
+                    }
+                });
+            }
+        });
     }
     catch(error) {
         json = {
