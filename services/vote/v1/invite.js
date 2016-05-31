@@ -63,7 +63,7 @@ exports.create = function(request, response) {
                             (function () {
                                 var count = 0;
                                 var iCopy = i;
-                                if(memberList[iCopy].name != null && memberList[iCopy].email != null && memberList[iCopy].phone != null && memberList[iCopy].country != null && memberList[iCopy].associationName != null) {
+                                if(memberList[iCopy].name != null && memberList[iCopy].email != null && memberList[iCopy].phone != null && memberList[iCopy].country != null && request.body.associationId != null) {
                                     connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE country = ? AND phone = ?) AND association_id = ?', [memberList[iCopy].name, memberList[iCopy].country, memberList[iCopy].email, memberList[iCopy].phone, request.body.associationId], function(queryError, find) {
                                         if(queryError != null) {
                                             log.error(queryError, "Query error. (Function: Invite.Create)");
@@ -138,16 +138,16 @@ exports.create = function(request, response) {
                                                                         verificationFlag = 1;
                                                                     }
 
-                                                                    if(util.getCountryCode(memberList[iCopy].country) == "Undefined") {
-                                                                        json = {
-                                                                            error: "Invalid Country Name"
-                                                                        };
-                                                                        log.info({Function: "Invite.Create"}, "Invalid Country Name. Country Name: " + JSON.stringify(memberList[iCopy].country));
-                                                                        return response.status(500).json(json);
-                                                                    }
+                                                                    //if(util.getCountryCode(memberList[iCopy].country) == "Undefined") {
+                                                                    //    json = {
+                                                                    //        error: "Invalid Country Name"
+                                                                    //    };
+                                                                    //    log.info({Function: "Invite.Create"}, "Invalid Country Name. Country Name: " + JSON.stringify(memberList[iCopy].country));
+                                                                    //    return response.status(500).json(json);
+                                                                    //}
 
-                                                                    //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag, authCode, roleId, authTypeId, country, city, countryCode
-                                                                    connection.query('INSERT INTO '+ config.mysql.db.name +'.user (name, phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, role_id, auth_type_id, country, city, country_code, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.name, request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", country, request.body.city, util.getCountryCode(country), "1"], function(queryError, user) {
+                                                                    //userPhone, userCountry, countryCode, userCity, userRole, createdTime, publicKey, secretKey, verificationFlag, roleId, authTypeId, country, countryCode
+                                                                    connection.query('INSERT INTO '+ config.mysql.db.name +'.user (name, phone, email, public_key, secret_key, access_time, created_time, updated_time, is_verified, role_id, auth_type_id, country, country_code, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [memberList[iCopy].name, memberList[iCopy].phone, memberList[iCopy].email, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, "1", "1", memberList[iCopy].country, memberList[iCopy].code, "1"], function(queryError, user) {
                                                                         if(queryError != null) {
                                                                             log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= User Create)");
                                                                             json = {
@@ -167,7 +167,7 @@ exports.create = function(request, response) {
                                                                                 else {
                                                                                     var phoneArray = [];
                                                                                     phoneArray.push(memberList[iCopy].phone);
-                                                                                    sms.sendSMS(phoneArray, "Hi " + memberList[iCopy].name + "You have been added as a member to an association" + memberList[iCopy].associationName + "Download Goounj from the Play Store");
+                                                                                    sms.sendSMS(phoneArray, "Hi " + memberList[iCopy].name + "! You have been added as a member to an association" + memberList[iCopy].associationName + "Download Goounj from the Play Store");
 
                                                                                     count++;
                                                                                     log.info({Function: "Invite.Create"}, "adding user ID: " + memberList[iCopy]);

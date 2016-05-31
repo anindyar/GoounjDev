@@ -107,6 +107,10 @@ exports.show = function(request, response) {
                         }());
                     }
                 }
+                else {
+                    log.info({Function: "ElectionListByAssociation.Show"}, "Elections not found");
+                    return response.sendStatus(404);
+                }
             });
         });
     }
