@@ -441,7 +441,7 @@ exports["delete"] = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('DELETE FROM '+ config.mysql.db.name +'.election_user_map WHERE election_id = ?', request.params.id, function(queryError, remove) {
+            connection.query('DELETE FROM '+ config.mysql.db.name +'.vote WHERE election_id = ?; DELETE FROM '+ config.mysql.db.name +'.election_user_map WHERE election_id = ?; DELETE FROM '+ config.mysql.db.name +'.election WHERE id = ?', [request.params.id, request.params.id, request.params.id], function(queryError, remove) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to fetch election details. (Function = Election.Delete)");
                     json = {
@@ -450,19 +450,8 @@ exports["delete"] = function(request, response) {
                     return response.status(500).json(json);
                 }
                 else if(remove.affectedRows != 0) {
-                    connection.query('DELETE FROM '+ config.mysql.db.name +'.election WHERE id = ?', request.params.id, function(queryError, del) {
-                        if (queryError != null) {
-                            log.error(queryError, "Query error. Failed to fetch election details. (Function = Election.Delete)");
-                            json = {
-                                error: "Requested action failed. Database could not be reached."
-                            };
-                            return response.status(500).json(json);
-                        }
-                        else if(del.affectedRows != 0) {
-                            log.info({Function: "Election.Delete"}, "Election Deleted Successfully. Election ID: " + request.params.id);
-                            return response.sendStatus(200);
-                        }
-                    });
+                    log.info({Function: "Election.Delete"}, "Election Deleted Successfully. Election ID: " + request.params.id);
+                    return response.sendStatus(200);
                 }
                 else {
                     log.info({Function: "Election.Delete"}, "Requested Election Not Found. Election ID: " + request.params.id );
