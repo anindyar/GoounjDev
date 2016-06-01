@@ -35,6 +35,7 @@ var moment = require('moment');
 var sms = require('./../../../sms');
 var mailer = require('./../../../email');
 
+//adding members for an association
 exports.create = function(request, response) {
     var json;
     var memberList = [];
@@ -64,7 +65,7 @@ exports.create = function(request, response) {
                                 var count = 0;
                                 var iCopy = i;
                                 if(memberList[iCopy].name != null && memberList[iCopy].email != null && memberList[iCopy].phone != null && memberList[iCopy].country != null && request.body.associationId != null) {
-                                    connection.query('SELECT * FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE country = ? AND phone = ?) AND association_id = ?', [memberList[iCopy].name, memberList[iCopy].country, memberList[iCopy].email, memberList[iCopy].phone, request.body.associationId], function(queryError, find) {
+                                    connection.query('SELECT id FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE country_code = ? AND phone = ?) AND association_id = ?', [memberList[iCopy].code, memberList[iCopy].phone, request.body.associationId], function(queryError, find) {
                                         if(queryError != null) {
                                             log.error(queryError, "Query error. (Function: Invite.Create)");
                                             json  = {
@@ -72,8 +73,8 @@ exports.create = function(request, response) {
                                             };
                                             return response.status(500).json(json);
                                         }
-                                        if(find.length != 0) {
-                                            log.info({Function: "Invite.Create"}, "user ID: " + memberList[iCopy] + " is already a member");
+                                        if(find[0]) {
+                                            log.info({Function: "Invite.Create"}, "user: " + memberList[iCopy].name + " is already a member");
                                             if(iCopy == memberList.length - 1) {
                                                 return response.sendStatus(200);
                                             }
@@ -214,6 +215,8 @@ exports.create = function(request, response) {
     }
 };
 
+
+//members of the given association
 exports.show = function(request, response) {
     var json;
     try {
@@ -254,6 +257,54 @@ exports.show = function(request, response) {
             error: "Error: " + error.message
         };
         log.error(error, "Exception occured. (Function: Invite.Show)");
+        return response.status(500).json(json);
+    }
+};
+
+
+exports.update = function(request, response) {
+    var json;
+    try {
+        if(request.body.userId != null) {
+            request.getConnection(function(connectionError, connection) {
+                if(connectionError != null) {
+                    log.error(connectionError, "Database connection error (Function = Invite.Delete)");
+                    json = {
+                        error: "Requested action failed. Database could not be reached."
+                    };
+                    return response.status(500).json(json);
+                }
+
+                //userId must be an array
+                var userId = request.body.userId;
+                for(var i = 0; i < userId.length; i++) {
+                    (function(){
+                        var iCopy = i;
+                        connection.query('UPDATE '+ config.mysql.db.name + '.association_user_map SET is_active = 0 WHERE association_id = ? AND user_id = ?', [request.params.id, userId[iCopy]], function(queryError, member) {
+                            if (queryError != null) {
+                                log.error(queryError, "Query error. Failed to create an election. (Function = Invite.Update)");
+                                json = {
+                                    error: "Requested action failed. Database could not be reached."
+                                };
+                                return response.status(500).json(json);
+                            }
+                            else {
+                                if(iCopy == userId.length - 1) {
+                                    log.info({Function: "Invite.Show"}, "Members set to inactive: " + userId.length);
+                                    return response.sendStatus(200);
+                                }
+                            }
+                        });
+                    }());
+                }
+            });
+        }
+    }
+    catch(error) {
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception occured. (Function: Invite.Delete)");
         return response.status(500).json(json);
     }
 };
