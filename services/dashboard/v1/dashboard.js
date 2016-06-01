@@ -4,6 +4,7 @@
 
 var config = require('./../../../config');
 var log = require('./../../../log');
+var moment = require('moment');
 
 exports.show = function(request, response){
     var json;
@@ -27,9 +28,11 @@ exports.show = function(request, response){
                         return response.status(500).json(json);
                     }
                     else if(user[0]) {
-                        connection.query('(SELECT id AS pollId, poll_name AS pollName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 0) AS totalPolls, is_survey AS isSurvey FROM poll WHERE is_survey = 0 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5) UNION (SELECT id AS surveyId, poll_name AS surveyName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 1) AS totalSurveys, is_survey AS isSurvey FROM poll WHERE is_survey = 1 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5);', [request.params.id, request.params.id, request.params.id, request.params.id], function(queryError, pollAndSurvey) {
+                        var utcTimeStamp = moment(new Date()).format('YYYY/MM/DD');
+
+                        connection.query('(SELECT id AS pollId, poll_name AS pollName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 0) AS total, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 0 AND poll.end_date >= ?) AS open, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 0 AND poll.end_date < ?) AS closed, is_survey AS isSurvey FROM poll WHERE is_survey = 0 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5) UNION (SELECT id AS surveyId, poll_name AS surveyName, start_date AS startDate, end_date AS endDate, (SELECT COUNT(user_id) FROM answer WHERE poll_id = poll.id) AS totalAnswers, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 1) AS total, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 1 AND poll.end_date >= ?) AS open, (SELECT COUNT(id) FROM poll WHERE created_user_id = ? AND is_survey = 1 AND poll.end_date < ?) AS closed, is_survey AS isSurvey FROM poll WHERE is_survey = 1 AND poll.created_user_id = ? ORDER BY poll.id DESC LIMIT 5);', [request.params.id, request.params.id, utcTimeStamp, request.params.id, utcTimeStamp, request.params.id, request.params.id, request.params.id, utcTimeStamp, request.params.id, utcTimeStamp, request.params.id], function(queryError, pollAndSurvey) {
                             if (queryError != null) {
-                                log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
+                                log.error(queryError, "Database Query Error (Function = Dashboard.Show)");
                                 json = {
                                     error: "Requested action failed. Database could not be reached."
                                 };
@@ -48,7 +51,7 @@ exports.show = function(request, response){
                                         }
                                     }
 
-                                    connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS noOfElections FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC LIMIT 5', [request.params.id, request.params.id], function(queryError, elections) {
+                                    connection.query('SELECT election.id AS electionId, election.name AS electionName, created_date AS createdDate, start_date AS startDate, end_date AS endDate, nomination_end_date AS nominationEndDate, vigilance_user_id AS vigilanceUserId, (SELECT name FROM user WHERE id = election.vigilance_user_id) AS vigilanceUser, association_id AS associationId, (SELECT name FROM association WHERE id = election.association_id) AS associationName, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ?) AS total, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? AND election.end_date >= ?) AS open, (SELECT COUNT(election.id) FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? AND election.end_date < ?) AS closed  FROM election JOIN association ON association.id = election.association_id WHERE association.admin_id = ? ORDER BY election.id DESC LIMIT 5', [request.params.id, request.params.id, utcTimeStamp, request.params.id, utcTimeStamp, request.params.id], function(queryError, elections) {
                                         if (queryError != null) {
                                             log.error(queryError, "Database Connection Error (Function = Dashboard.Show)");
                                             json = {

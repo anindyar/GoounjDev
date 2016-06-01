@@ -167,7 +167,7 @@ exports.create = function(request, response) {
                                                                                 else {
                                                                                     var phoneArray = [];
                                                                                     phoneArray.push(memberList[iCopy].phone);
-                                                                                    sms.sendSMS(phoneArray, "Hi " + memberList[iCopy].name + "! You have been added as a member to an association" + memberList[iCopy].associationName + "Download Goounj from the Play Store");
+                                                                                    sms.sendSMS(phoneArray, "Hi " + memberList[iCopy].name + "! You have been added as a member to an association" + memberList[iCopy].associationName + "Download Goounj using https://play.google.com/store/apps/details?id=com.bvocal.goounj&hl=en");
 
                                                                                     count++;
                                                                                     log.info({Function: "Invite.Create"}, "adding user ID: " + memberList[iCopy]);
