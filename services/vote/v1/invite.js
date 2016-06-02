@@ -65,7 +65,7 @@ exports.create = function(request, response) {
                                 var count = 0;
                                 var iCopy = i;
                                 if(memberList[iCopy].name != null && memberList[iCopy].email != null && memberList[iCopy].phone != null && memberList[iCopy].country != null && request.body.associationId != null) {
-                                    connection.query('SELECT id FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE country_code = ? AND phone = ?) AND association_id = ?', [memberList[iCopy].code, memberList[iCopy].phone, request.body.associationId], function(queryError, find) {
+                                    connection.query('SELECT is_active, user_id FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE country_code = ? AND phone = ?) AND association_id = ?', [memberList[iCopy].code, memberList[iCopy].phone, request.body.associationId], function(queryError, find) {
                                         if(queryError != null) {
                                             log.error(queryError, "Query error. (Function: Invite.Create)");
                                             json  = {
@@ -74,7 +74,23 @@ exports.create = function(request, response) {
                                             return response.status(500).json(json);
                                         }
                                         if(find[0]) {
-                                            log.info({Function: "Invite.Create"}, "user: " + memberList[iCopy].name + " is already a member");
+                                            if(find[0].is_active == 0) {
+                                                connection.query('UPDATE '+ config.mysql.db.name +'.association_user_map SET is_active = 1 WHERE user_id = ?', find[0].user_id, function(queryError, activate) {
+                                                    if(queryError != null) {
+                                                        log.error(queryError, "Query error. (Function: Invite.Create)");
+                                                        json  = {
+                                                            error: "Query error. Failed to add association members."
+                                                        };
+                                                        return response.status(500).json(json);
+                                                    }
+                                                    else {
+                                                        count++;
+                                                    }
+                                                });
+                                            }
+                                            else {
+                                                log.info({Function: "Invite.Create"}, "user: " + memberList[iCopy].name + " is already a member");
+                                            }
                                             if(iCopy == memberList.length - 1) {
                                                 return response.sendStatus(200);
                                             }
@@ -202,8 +218,11 @@ exports.create = function(request, response) {
                         return response.status(404).json(json);
                     }
                 });
-
             });
+        }
+        else {
+            log.info({Function: "AssociationInvite.Create"}, "Association not found.");
+            return response.sendStatus(400);
         }
     }
     catch(error) {

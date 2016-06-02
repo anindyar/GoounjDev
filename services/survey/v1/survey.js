@@ -225,45 +225,6 @@ exports.create = function(request, response) {
  */
 
 
-exports["delete"] = function(request, response) {
-    var json;
-    try {
-        request.getConnection(function(connectionError, connection) {
-            if (connectionError != null) {
-                log.error(connectionError, "Database Connection Error (Function = Survey.Delete)");
-                json = {
-                    error: "Survey Delete failed. Database could not be reached."
-                };
-                return response.status(500).json(json);
-            }
-            connection.query('CALL deletePoll(?);', request.params.id, function(queryError, result) {
-                if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to delete a survey. User details " + JSON.stringify(request.params.id) + "(Function= Survey.Delete)");
-                    json = {
-                        error: "Requested action failed. Database could not be reached."
-                    };
-                    return response.status(500).json(json);
-                } else {
-                    if (result.affectedRows != 0) {
-                        log.info({Function: "Survey.Delete"}, "Survey Deleted Successfully. Poll ID: " + request.params.id);
-                        return response.sendStatus(200);
-                    } else {
-                        log.info({Function: "Survey.Delete"}, "Requested survey poll not found. Poll ID: " + request.params.id );
-                        return response.sendStatus(404);
-                    }
-                }
-            });
-        });
-    } catch (error) {
-        json = {
-            error: "Error: " + error.message
-        };
-        log.error(error, "Exception Occurred (Function = Survey.Delete)");
-        return response.status(500).json(json);
-    }
-};
-
-
 
 /**
  * @api {get} /survey/v1/survey/:id Show survey

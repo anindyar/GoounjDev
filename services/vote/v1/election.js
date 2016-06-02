@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the user service.
+ * This file contains the logic for the election service.
  *
  *************************************************************************/
 
@@ -429,42 +429,3 @@ exports.show = function(request, response) {
  * @apiUse ElectionNotFoundError
  *
  */
-
-exports["delete"] = function(request, response) {
-    var json;
-    try {
-        request.getConnection(function(connectionError, connection) {
-            if(connectionError != null) {
-                log.error(connectionError, "Database connection error (Function = Election.Delete)");
-                json = {
-                    error: "Requested action failed. Database could not be reached."
-                };
-                return response.status(500).json(json);
-            }
-            connection.query('DELETE FROM '+ config.mysql.db.name +'.vote WHERE election_id = ?; DELETE FROM '+ config.mysql.db.name +'.election_user_map WHERE election_id = ?; DELETE FROM '+ config.mysql.db.name +'.election WHERE id = ?', [request.params.id, request.params.id, request.params.id], function(queryError, remove) {
-                if (queryError != null) {
-                    log.error(queryError, "Query error. Failed to fetch election details. (Function = Election.Delete)");
-                    json = {
-                        error: "Requested action failed. Database could not be reached."
-                    };
-                    return response.status(500).json(json);
-                }
-                else if(remove.affectedRows != 0) {
-                    log.info({Function: "Election.Delete"}, "Election Deleted Successfully. Election ID: " + request.params.id);
-                    return response.sendStatus(200);
-                }
-                else {
-                    log.info({Function: "Election.Delete"}, "Requested Election Not Found. Election ID: " + request.params.id );
-                    return response.sendStatus(404);
-                }
-            });
-        });
-    }
-    catch(error){
-        json = {
-            error: "Error: " + error.message
-        };
-        log.error(error, "Exception occured. (Function: Election.Delete)");
-        return response.status(500).json(json);
-    }
-};

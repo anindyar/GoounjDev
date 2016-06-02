@@ -57,6 +57,10 @@ module.exports = {
             name: 'timeline',
             methods: require('./timeline'),
             auth: 'bypass'
+        }, {
+            name: 'weblogin',
+            methods: require('./weblogin'),
+            auth: 'bypass'
         }
     ]
 };
