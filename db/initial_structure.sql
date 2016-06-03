@@ -7,7 +7,8 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schema goounj
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `goounj`;
+DROP SCHEMA IF EXISTS `goounj` ;
+
 -- -----------------------------------------------------
 -- Schema goounj
 -- -----------------------------------------------------
@@ -393,7 +394,6 @@ CREATE TABLE IF NOT EXISTS `goounj`.`association` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `admin_id` INT NOT NULL,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   INDEX `fk_association_user1_idx` (`admin_id` ASC),
   CONSTRAINT `fk_association_user1`
@@ -471,7 +471,7 @@ CREATE TABLE IF NOT EXISTS `goounj`.`candidate` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
   `election_id` INT NOT NULL,
-  `is_active` TINYINT(1) NULL DEFAULT 0,
+  `is_accepted` TINYINT(1) NULL DEFAULT 0,
   `name` VARCHAR(45) NULL,
   `nick_name` VARCHAR(45) NULL,
   `about` VARCHAR(150) NULL,
@@ -567,6 +567,53 @@ CREATE TABLE IF NOT EXISTS `goounj`.`two_step_verification` (
   CONSTRAINT `fk_two_step_verification_user1`
     FOREIGN KEY (`user_id`)
     REFERENCES `goounj`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`feedback_type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`feedback_type` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`modules`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`modules` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `goounj`.`feedback`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `goounj`.`feedback` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `comments` VARCHAR(245) NOT NULL,
+  `feedback_type_id` INT NOT NULL,
+  `modules_id` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC),
+  INDEX `fk_feedback_feedback_type1_idx` (`feedback_type_id` ASC),
+  INDEX `fk_feedback_modules1_idx` (`modules_id` ASC),
+  CONSTRAINT `fk_feedback_feedback_type1`
+    FOREIGN KEY (`feedback_type_id`)
+    REFERENCES `goounj`.`feedback_type` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_feedback_modules1`
+    FOREIGN KEY (`modules_id`)
+    REFERENCES `goounj`.`modules` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
