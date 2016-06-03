@@ -30,7 +30,7 @@
 var crypto = require('crypto');
 var config = require('./../../../config');
 var log = require('./../../../log');
-
+var moment = require('moment');
 
 /**
  * @apiDefine UserUnauthorisedError
@@ -77,15 +77,15 @@ var log = require('./../../../log');
  *
  */
 
- exports.create = function(request, response) {
+exports.create = function(request, response) {
 
     try {
-        if (request.body.country == null) {
+        if (request.body.code == null) {
             log.info({Function: "Login.Create"}, "Login Failed. Details: 'Country' is empty");
             return response.sendStatus(401);
         }
 
-        if (request.body.city == null) {
+        if (request.body.password == null) {
             log.info({Function: "Login.Create"}, "Login Failed. Details: 'City' is empty");
             return response.sendStatus(401);
         }
@@ -104,23 +104,31 @@ var log = require('./../../../log');
                 return response.status(500).json(json);
             }
 
-            connection.query('SELECT phone, publicKey, secret, user_id, verified FROM '+ config.mysql.db.name +'.user WHERE user_name = ?', request.body.username, function (queryError, authenticatedUser) {
+            connection.query('SELECT name, password, public_key, secret_key, id, is_verified FROM '+ config.mysql.db.name +'.user WHERE phone = ? AND country_code = ?', [request.body.phone, request.body.code], function (queryError, authenticatedUser) {
                 if (queryError != null) {
-                    log.error(queryError, "Query Error. User Login failed. Username: " + request.body.username + " (Function = Login.Create)");
+                    log.error(queryError, "Query Error. User Login failed. Phone: " + request.body.phone + " (Function = Login.Create)");
                     json = {
                         error: "User Login failed. Database could not be reached."
                     };
                     return response.status(500).json(json);
                 } else {
-                    if ((authenticatedUser == null) || (authenticatedUser[0].secret == null)) {
+                    if ((authenticatedUser == null) || (authenticatedUser[0].secret_key == null)) {
                         var json = {
                             error: "The email address or password supplied were not correct."
                         };
-                        log.info({Function: "Login.Create"}, "Login Failed. Details: The email address or password supplied were not correct.");
+                        log.info({Function: "Login.Create"}, "Login Failed. Details: The phone or password supplied were not correct.");
                         return response.status(401).json(json);
                     }
 
-                    if(authenticatedUser[0].verified === 0) {
+                    if(authenticatedUser[0].password == null) {
+                        json = {
+                            error: "Contact Administrator for Web Access."
+                        };
+                        log.info({Function: "Login.Create"}, "Login Failed. Details: Your account is not activated. Please activate your account.");
+                        return response.status(401).json(json);
+                    }
+
+                    if(authenticatedUser[0].is_verified === 0) {
                         json = {
                             error: "Your account is not activated. Please activate your account."
                         };
@@ -137,33 +145,34 @@ var log = require('./../../../log');
                             json = {
                                 error: "Login Failed"
                             };
-                            log.error(cryptoPdkError, "Login Failed. Username: " + request.body.username + " (Function = Login.Create)");
+                            log.error(cryptoPdkError, "Login Failed. Phone: " + request.body.phone + " (Function = Login.Create)");
                             return response.status(500).json(json);
                         }
 
                         if (encodedPassword.toString("base64") === originalPassword) {
-                            var currentTimestamp = new Date();
-                            var utcTimeStamp = currentTimestamp.toUTCString();
 
-                            connection.query('UPDATE '+ config.mysql.db.name +'.user SET atime=? WHERE user_id = ?', [utcTimeStamp,authenticatedUser[0].user_id], function(queryError, result) {
+                            var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
+
+                            connection.query('UPDATE '+ config.mysql.db.name +'.user SET access_time=? WHERE id = ?', [utcTimeStamp, authenticatedUser[0].id], function(queryError, result) {
                                 if (queryError != null) {
-                                    log.error(queryError, "Query Error. User Login failed. Username: " + request.body.username + " (Function = Login.Create)");
+                                    log.error(queryError, "Query Error. User Login failed. Phone: " + request.body.phone + " (Function = Login.Create)");
                                     json = {
                                         error: "User Login failed. Database could not be reached."
                                     };
                                     return response.status(500).json(json);
                                 } else {
                                     json = {
-                                        user_id: authenticatedUser[0].user_id,
-                                        publickey: authenticatedUser[0].publickey,
-                                        secret: authenticatedUser[0].secret
+                                        name: authenticatedUser[0].name,
+                                        useriId: authenticatedUser[0].id,
+                                        publicKey: authenticatedUser[0].public_key,
+                                        secretKey: authenticatedUser[0].secret_key
                                     };
                                     return response.status(200).json(json);
                                 }
                             });
                         } else {
                             json = {
-                                error: "The email address or password supplied were not correct."
+                                error: "The phone or password supplied were not correct."
                             };
                             log.info({Function: "Login.Create"}, "Login Failed. Details: The email address or password supplied were not correct.");
                             return response.status(401).json(json);

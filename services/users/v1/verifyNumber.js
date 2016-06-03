@@ -100,7 +100,7 @@ exports.create = function(request, response) {
                         }
                         if(match[0]) {
                             if(match[0].auth_code == request.body.authCode) {
-                                connection.query('UPDATE '+ config.mysql.db.name +'.user SET phone = ? WHERE id = ?', [request.body.newNumber, request.body.userId], function(queryError, result) {
+                                connection.query('UPDATE '+ config.mysql.db.name +'.user SET phone = ?, is_verified = ? WHERE id = ?', [request.body.newNumber, "1", request.body.userId], function(queryError, result) {
                                     if(queryError != null) {
                                         log.error(queryError, "Query error. Failed to verify number. (Function = VerifyNumber.Create)");
                                         json = {

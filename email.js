@@ -30,8 +30,9 @@
 var mandrill = require('mandrill-api/mandrill');
 var config = require('./config');
 var log = require('./log');
+var nodemailer = require('nodemailer');
 
-exports.sendEmail = function(toAddress, subject, text) {
+exports.sendMandrillEmail = function(toAddress, subject, text) {
 
     if(config.email.enabled) {
         var mandrill_client = new mandrill.Mandrill(config.email.mandrill.api_key);
@@ -63,7 +64,40 @@ exports.sendEmail = function(toAddress, subject, text) {
             // A mandrill error occurred: Unknown_Subaccount - No subaccount exists with the id 'customer-123'
         });
     } else {
-        log.info({Function: "Email.SendEmail"}, "Email is disabled. Please enable email in the configurations.");
+        log.info({Function: "Email.SendMandrillEmail"}, "Email is disabled. Please enable email in the configurations.");
     }
+};
+
+
+exports.sendEmail = function(toAddress, subject, text) {
+
+    // create reusable transporter object using SMTP transport
+    var transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: config.nodemailer.username,
+            pass: config.nodemailer.password
+        }
+    });
+
+    // NB! No need to recreate the transporter object. You can use
+    // the same transporter object for all e-mails
+
+
+
+    // setup e-mail data with unicode symbols
+    var mailOptions = {
+        from: config.nodemailer.from,
+        to: toAddress,
+        subject: subject,
+        text: text
+    };
+
+// send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            log.error(error, "Unable to send email (Function = Email.SendEmail)");
+        }
+    });
 };
 

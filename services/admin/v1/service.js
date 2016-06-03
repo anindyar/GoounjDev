@@ -43,6 +43,11 @@ module.exports = {
             name: 'election',
             methods: require('./election'),
             auth: 'bypass'
+        },
+        {
+            name: 'user',
+            methods: require('./user'),
+            auth: 'bypass'
         }
     ]
 };

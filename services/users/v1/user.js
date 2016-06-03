@@ -186,79 +186,53 @@ exports.create = function(request, response) {
                     }
                     else {
                         var utcTimeStamp =  moment(new Date()).format('YYYY/MM/DD HH:mm:ss');
+                        var authCode = Math.floor(Math.random()*9000) + 1000;
+                        var publicKey = crypto.randomBytes(32).toString("hex");
+                        var secretKey = crypto.randomBytes(64).toString("hex");
 
-                        crypto.randomBytes(24,function(cryptoRandomError, randomBytes) {
-                            if(cryptoRandomError) {
+                        var verificationFlag = 0;
+                        if(config.userVerification.enabled) {
+                            verificationFlag = 0;
+                        }
+                        else {
+                            verificationFlag = 1;
+                        }
+
+                        if(util.getCountryCode(country) == "Undefined") {
+                            jsn = {
+                                error: "Invalid Country Name"
+                            };
+                            log.info({Function: "User.Create"}, "Invalid Country Name. Country Name: " + JSON.stringify(request.body.country));
+                            return response.status(500).json(jsn);
+                        }
+
+                        //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag, authCode, roleId, authTypeId, country, city, countryCode, deviceId, deviceToken, osType, osVersion
+                        connection.query('INSERT INTO '+ config.mysql.db.name +'.user (name, phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, auth_code, role_id, auth_type_id, country, city, country_code, device_id, device_token, os_type, os_version, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.name, request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", country, request.body.city, util.getCountryCode(country), request.body.deviceId, request.body.deviceToken, request.body.osType, request.body.osVersion, "1"], function(queryError, user) {
+
+                            if(queryError != null) {
+                                log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= User Create)");
                                 jsn = {
-                                    error: "Failed to create a new user."
+                                    error: "Requested action failed. Database could not be reached."
                                 };
-
-                                log.error(cryptoRandomError, "Failed to create a new user. User Details: " + JSON.stringify(request.body.phone) + "(Function = User.Create)");
                                 return response.status(500).json(jsn);
                             }
                             else {
-                                crypto.pbkdf2(request.body.phone, randomBytes.toString("base64"), config.hashIterations, 24, function(cryptoPdkError, encodedPhone) {
-                                    if(cryptoPdkError) {
-                                        jsn = {
-                                            error: "Failed to create a new user."
-                                        };
-                                        log.error(cryptoPdkError, "Failed to create new user. User Details: " + JSON.stringify(request.body.phone) + "(Function = User.Create)");
-                                        return response.status(500).json(jsn);
-                                    }
-                                    else {
-                                        var authCode = Math.floor(Math.random()*9000) + 1000;
-                                        var publicKey = crypto.randomBytes(32).toString("hex");
-                                        var secretKey = crypto.randomBytes(64).toString("hex");
+                                if(config.userVerification.enabled) {
+                                    var phoneArray = [];
+                                    phoneArray.push(request.body.phone);
 
-                                        var verificationFlag = 0;
-                                        if(config.userVerification.enabled) {
-                                            verificationFlag = 0;
-                                        }
-                                        else {
-                                            verificationFlag = 1;
-                                        }
+                                    sms.sendSMS(phoneArray, "This is Goounj OTP Service. Please enter the following verification code. Auth Code: " + authCode);
+                                }
+                                var userID = user.insertId;
+                                jsn = {
+                                    userId: userID,
+                                    publicKey: publicKey,
+                                    secretKey: secretKey
+                                };
+                                log.info({Function: "User.Create"}, "New user created successfully. User ID: " + userID);
+                                return response.status(200).json(jsn);
 
-                                        if(util.getCountryCode(country) == "Undefined") {
-                                            jsn = {
-                                                error: "Invalid Country Name"
-                                            };
-                                            log.info({Function: "User.Create"}, "Invalid Country Name. Country Name: " + JSON.stringify(request.body.country));
-                                            return response.status(500).json(jsn);
-                                        }
-
-                                        //userPhone, userCountry, countryCode, userCity, userRole, authCode, createdTime, publicKey, secretKey, verificationFlag, authCode, roleId, authTypeId, country, city, countryCode, deviceId, deviceToken, osType, osVersion
-                                        connection.query('INSERT INTO '+ config.mysql.db.name +'.user (name, phone, public_key, secret_key, access_time, created_time, updated_time, is_verified, auth_code, role_id, auth_type_id, country, city, country_code, device_id, device_token, os_type, os_version, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [request.body.name, request.body.phone, publicKey, secretKey, utcTimeStamp, utcTimeStamp, utcTimeStamp, verificationFlag, authCode, "1", "1", country, request.body.city, util.getCountryCode(country), request.body.deviceId, request.body.deviceToken, request.body.osType, request.body.osVersion, "1"], function(queryError, user) {
-
-                                            if(queryError != null) {
-                                                log.error(queryError, "Query error. Failed to create a new user. User details " + JSON.stringify(request.body.phone) + "(Function= User Create)");
-                                                jsn = {
-                                                    error: "Requested action failed. Database could not be reached."
-                                                };
-                                                return response.status(500).json(jsn);
-                                            }
-                                            else {
-                                                if(config.userVerification.enabled) {
-                                                    var phoneArray = [];
-                                                    phoneArray.push(request.body.phone);
-
-                                                    sms.sendSMS(phoneArray, "This is Goounj OTP Service. Please enter the following verification code. Auth Code: " + authCode);
-                                                }
-                                                var userID = user.insertId;
-                                                jsn = {
-                                                    userId: userID,
-                                                    publicKey: publicKey,
-                                                    secretKey: secretKey
-                                                };
-                                                log.info({Function: "User.Create"}, "New user created successfully. User ID: " + userID);
-                                                return response.status(200).json(jsn);
-
-                                            }
-                                        });
-                                    }
-
-                                });
                             }
-
                         });
                     }
                 });
