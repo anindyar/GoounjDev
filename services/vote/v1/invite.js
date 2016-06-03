@@ -247,7 +247,7 @@ exports.show = function(request, response) {
                 };
                 return response.status(500).json(json);
             }
-            connection.query('SELECT user.id, user.email, user.phone, user.country, user.name, user.is_active  FROM association_user_map INNER JOIN user ON user_id = user.id WHERE association_id = ? AND is_active = 0', request.params.id, function(queryError, list) {
+            connection.query('SELECT user.id, user.email, user.phone, user.country, user.name, user.is_active  FROM association_user_map as associationDetails INNER JOIN user ON user_id = user.id WHERE association_id = ? AND associationDetails.is_active = 1', request.params.id, function(queryError, list) {
                 if (queryError != null) {
                     log.error(queryError, "Query error. Failed to create an election. (Function = Invite.Show)");
                     json = {
@@ -326,4 +326,8 @@ exports.update = function(request, response) {
         log.error(error, "Exception occured. (Function: Invite.Delete)");
         return response.status(500).json(json);
     }
+};
+
+exports.options = function(request, response) {
+    return response.sendStatus(200);
 };
