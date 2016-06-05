@@ -64,7 +64,7 @@ exports.create = function(request, response) {
                             (function () {
                                 var count = 0;
                                 var iCopy = i;
-                                if(memberList[iCopy].name != null && memberList[iCopy].email != null && memberList[iCopy].phone != null && memberList[iCopy].country != null && request.body.associationId != null) {
+                                if(memberList[iCopy].name != null && memberList[iCopy].phone != null && memberList[iCopy].country != null && request.body.associationId != null) {
                                     connection.query('SELECT is_active, user_id FROM '+ config.mysql.db.name +'.association_user_map WHERE user_id = (SELECT id FROM '+ config.mysql.db.name +'.user WHERE country_code = ? AND phone = ?) AND association_id = ?', [memberList[iCopy].code, memberList[iCopy].phone, request.body.associationId], function(queryError, find) {
                                         if(queryError != null) {
                                             log.error(queryError, "Query error. (Function: Invite.Create)");
@@ -206,6 +206,12 @@ exports.create = function(request, response) {
                                             });
                                         }
                                     });
+                                } else {
+                                    json = {
+                                        error: "Bad Request"
+                                    };
+                                    log.info({Function: "AssociationInvite.Create"}, "Bad Request.");
+                                    return response.status(500).json(json);
                                 }
                             }());
                         }
