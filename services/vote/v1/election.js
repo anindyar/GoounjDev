@@ -413,19 +413,8 @@ exports.show = function(request, response) {
 };
 
 
-/**
- * @api {delete} /vote/v1/election/:id Delete Election
- * @apiVersion 0.1.0
- * @apiName DeleteElection
- * @apiGroup Vote
- *
- * @apiParam {String} id Election Id.
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *
- * @apiUse DatabaseError
- *
- * @apiUse ElectionNotFoundError
- *
- */
+
+exports.options = function(request, response) {
+    return response.sendStatus(200);
+};
+

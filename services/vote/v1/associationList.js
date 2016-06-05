@@ -110,7 +110,7 @@ exports.create = function(request, response) {
                 }
 
                 if(request.body.lowerLimit == null && request.body.upperLimit == null) {
-                    connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ? LIMIT ?, ?', ["1", request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
+                    connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName, user.id AS associationAdminId  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ? LIMIT ?, ?', ["1", request.body.userId, request.body.lowerLimit, request.body.upperLimit], function(queryError, result) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
                             json = {
@@ -129,7 +129,7 @@ exports.create = function(request, response) {
                     });
                 }
                 else {
-                    connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ?', ["1", request.body.userId], function(queryError, result) {
+                    connection.query('SELECT association.id AS associationID, association.name AS associationName, user.name AS associationAdminName, user.id AS associationAdminId  FROM association INNER JOIN user ON association.admin_id = user.id INNER JOIN association_user_map ON association.id = association_id WHERE association.is_active = ? AND association_user_map.user_id = ?', ["1", request.body.userId], function(queryError, result) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to fetch association list. Details " + JSON.stringify(request.body.userId) + "(Function = associationList.Create)");
                             json = {
