@@ -163,7 +163,7 @@ exports.create = function(request, response) {
                                 } else {
                                     json = {
                                         name: authenticatedUser[0].name,
-                                        useriId: authenticatedUser[0].id,
+                                        userId: authenticatedUser[0].id,
                                         publicKey: authenticatedUser[0].public_key,
                                         secretKey: authenticatedUser[0].secret_key
                                     };
