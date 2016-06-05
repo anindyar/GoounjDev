@@ -197,3 +197,7 @@ exports.index = function(request, response) {
     };
     return response.status(200).json(json);
 };
+
+exports.options = function(request, response) {
+    return response.sendStatus(200);
+};
