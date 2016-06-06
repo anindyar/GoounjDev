@@ -411,3 +411,39 @@ exports.update = function(request, response) {
 };
 
 
+exports["delete"] = function(request, response) {
+    var json;
+    try {
+        request.getConnection(function(connectionError, connection) {
+            if (connectionError != null) {
+                log.error(connectionError, "Database Connection Error (Function = Poll.Delete)");
+                json = {
+                    error: "Poll Update failed. Database could not be reached."
+                };
+                return response.status(500).json(json);
+            }
+            connection.query('UPDATE '+ config.mysql.db.name +'.poll SET is_active = 0 WHERE id = ? AND is_survey = 1', request.params.id, function(queryError, deleted) {
+                if (queryError != null) {
+                    log.error(queryError, "Query Error. Failed To Update poll details. Poll ID: " + request.params.id + " (Function = Poll.Update)");
+                    json = {
+                        error: "Requested Action Failed. Database could not be reached."
+                    };
+                    return response.status(500).json(json);
+                }
+                if(deleted.affectedRows != null) {
+                    console.log(deleted);
+                    log.info({Function: "Poll.Delete"}, "Poll (soft)deleted successfully. Poll Id: " + request.params.id);
+                    return response.sendStatus(200);
+
+                }
+            });
+        });
+    }
+    catch(error) {
+        json = {
+            error: "Error: " + error.message
+        };
+        log.error(error, "Exception Occurred (Function = Poll.Delete)");
+        return response.status(500).json(json);
+    }
+};
