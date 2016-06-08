@@ -23,7 +23,7 @@ exports.create = function(request, response) {
                     return response.status(500).json(json);
                 }
                 if (user.id == request.body.userId) {
-                    connection.query('INSERT INTO '+ config.mysql.db.name +'.feedback (comments, feedback_type_id, modules_id, user_id, email, phone) VALUES (?, (SELECT id FROM '+ config.mysql.db.name +'.feedback_type WHERE name = ?), (SELECT id FROM '+ config.mysql.db.name +'.modules WHERE name = ?), ?, ?, ?)', [request.body.comments, request.body.feedbackType, request.body.modules, request.body.userId, request.body.email, request.body.phone], function(queryError, feedback) {
+                    connection.query('INSERT INTO '+ config.mysql.db.name +'.feedback (comments, feedback_type_id, modules_id, user_id, email, phone) VALUES (?, (SELECT id FROM '+ config.mysql.db.name +'.feedback_type WHERE name = ?), (SELECT id FROM '+ config.mysql.db.name +'.modules WHERE name = ?), ?, ?, ?)', [request.body.comments, request.body.feedbackType, request.body.module, request.body.userId, request.body.email, request.body.phone], function(queryError, feedback) {
                         if (queryError != null) {
                             log.error(queryError, "Query error. Failed to create a new poll. User details " + JSON.stringify(request.body.phone) + "(Function = Feedback.Create)");
                             json = {
@@ -45,6 +45,8 @@ exports.create = function(request, response) {
                     json = {
                         error: "The userID doesn't match to the given email and phone."
                     };
+                    log.info({Function: "Feedback.Create"}, "Feedback unsuccessful");
+                    return response.status(400).json(json);
                 }
             });
         });
