@@ -1,7 +1,73 @@
+/*************************************************************************
+ *
+ * COPYRIGHT NOTICE
+ * __________________
+ *
+ * NodeServiceManager - v0.1.0
+ *
+ * Copyright (C) 2015, Orgware Technologies
+ * All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property
+ * of Orgware Technologies. Unauthorised copying of this  file, via any medium is
+ * strictly prohibited. Redistribution and use in source and binary forms,
+ * with or without modification, are not permitted.
+ * Proprietary and confidential.
+ *
+ * Author:
+ * Name: Kennet Jacob
+ * Email: kennetjacob@gmail.com
+ * Website: http://kennetjacob.com
+ *
+ *
+ * FILE SUMMARY
+ * __________________
+ *
+ * This file contains the logic for the feedback service.
+ *
+ *************************************************************************/
+
 var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
 
+/**
+ * @apiDefine UserNotFoundError
+ *
+ * @apiError UserNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} feedback/v1/feedback/:id Create Feedback
+ * @apiVersion 0.1.0
+ * @apiName CreateFeedback
+ * @apiGroup Feedback
+ *
+ * @apiParam {Number} id User's unique ID.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse UserNotFoundError
+ *
+ */
 
 exports.create = function(request, response) {
     var json;

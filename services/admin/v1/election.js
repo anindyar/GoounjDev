@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the election service.
+ * This file contains the logic for the election admin service.
  *
  *************************************************************************/
 
@@ -31,6 +31,46 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
+
+
+
+/**
+ * @apiDefine ElectionNotFoundError
+ *
+ * @apiError ElectionNotFound The requested election was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {delete} admin/v1/election/:id Delete Election
+ * @apiVersion 0.1.0
+ * @apiName DeleteElection
+ * @apiGroup Admin
+ *
+ * @apiParam {Number} id Election's unique ID.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
 
 
 exports["delete"] = function(request, response) {

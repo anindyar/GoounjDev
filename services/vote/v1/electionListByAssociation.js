@@ -1,10 +1,94 @@
-/**
- * Created by catherinesamuel on 31/05/16.
- */
+/*************************************************************************
+ *
+ * COPYRIGHT NOTICE
+ * __________________
+ *
+ * NodeServiceManager - v0.1.0
+ *
+ * Copyright (C) 2015, Orgware Technologies
+ * All Rights Reserved.
+ *
+ * NOTICE:  All information contained herein is, and remains the property
+ * of Orgware Technologies. Unauthorised copying of this  file, via any medium is
+ * strictly prohibited. Redistribution and use in source and binary forms,
+ * with or without modification, are not permitted.
+ * Proprietary and confidential.
+ *
+ * Author:
+ * Name: Kennet Jacob
+ * Email: kennetjacob@gmail.com
+ * Website: http://kennetjacob.com
+ *
+ *
+ * FILE SUMMARY
+ * __________________
+ *
+ * This file contains the logic for the list of elections by association service.
+ *
+ *************************************************************************/
 
 
 var config = require('./../../../config');
 var log = require('./../../../log');
+
+/**
+ * @apiDefine AssociationNotFoundError
+ *
+ * @apiError AssociationNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {get} /vote/v1/electionListByAssociation/:id Election List by Association
+ * @apiVersion 0.1.0
+ * @apiName ElectionListByAssociation
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Association Id.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *     [
+ *          {
+ *              "electionId": 2,
+ *              "electionName": "Orgware",
+ *              "endDate": "1/20/2016, 12:00:00 AM",
+ *              "startDate": "1/18/2016, 12:00:00 AM",
+ *              "isVoted": 1,
+ *              "nominationEndDate": "1/16/2016, 12:00:00 AM",
+ *              "associationName": "Orgware"
+ *          },
+ *          {
+ *              "electionId": 4,
+ *              "electionName": "Scrum master",
+ *              "endDate": "1/30/2016, 12:00:00 AM",
+ *              "startDate": "1/27/2016, 12:00:00 AM",
+ *              "isVoted": 1,
+ *              "nominationEndDate": "1/21/2016, 12:00:00 AM",
+ *              "associationName": "Orgware"
+ *          }
+ *      ]
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
 
 exports.show = function(request, response) {
     var json;

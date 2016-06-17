@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the user service.
+ * This file contains the logic for the list of elections service.
  *
  *************************************************************************/
 
@@ -31,6 +31,16 @@
 
 var config = require('./../../../config');
 var log = require('./../../../log');
+
+
+/**
+ * @apiDefine UserNotFoundError
+ *
+ * @apiError UserNotFound The requested user was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
 
 /**
  * @apiDefine DatabaseError
@@ -88,6 +98,7 @@ var log = require('./../../../log');
  *
  * @apiUse DatabaseError
  *
+ * @apiUse UserNotFoundError
  *
  */
 
@@ -265,6 +276,40 @@ exports.create = function(request, response) {
     }
 };
 
+
+/**
+ * @api {get} /vote/v1/electionList/:id Election List for the created user
+ * @apiVersion 0.1.0
+ * @apiName ElectionListForCreatedUser
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id User Id.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     [
+ *      {
+ *        "vigilanceUserId": 3,
+ *        "electionName": "Shuttle master",
+ *        "nominationEndDate": "2016-04-15T18:30:00.000Z",
+ *        "createdDate": "2016-04-13T08:44:25.000Z",
+ *        "votesForThisElection": 0,
+ *        "associationId": 2,
+ *        "endDate": "2016-05-02T18:30:00.000Z",
+ *        "noOfElections": 3,
+ *        "electionId": 4,
+ *        "vigilanceUser": "Cath",
+ *        "associationName": "devs",
+ *        "startDate": "2016-04-30T18:30:00.000Z"
+ *      }
+ *     ]
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse UserNotFoundError
+ *
+ */
+
 exports.show = function(request, response) {
     var json;
     try {
@@ -284,14 +329,18 @@ exports.show = function(request, response) {
                     };
                     return response.status(500).json(json);
                 }
-                else {
+                else if(list) {
                     for(var i=0; i<list.length; i++) {
                         if(list[i].voteCount == null) {
                             list[i].voteCount = 0;
                         }
                     }
-                    log.info({Function: "ElectionList.Show"}, "Requested UserId not found.");
+                    log.info({Function: "ElectionList.Show"}, "Election List fetched");
                     return response.status(200).json(list);
+                }
+                else {
+                    log.info({Function: "ElectionList.Show"}, "User Not Found");
+                    return response.sendStatus(404);
                 }
             });
         });

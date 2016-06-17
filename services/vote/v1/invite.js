@@ -35,6 +35,63 @@ var moment = require('moment');
 var sms = require('./../../../sms');
 var mailer = require('./../../../email');
 
+
+/**
+ * @apiDefine ElectionNotFoundError
+ *
+ * @apiError ElectionNotFound The requested election was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/election Create Election
+ * @apiVersion 0.1.0
+ * @apiName CreateElection
+ * @apiGroup Vote
+ *
+ * @apiParam {String} associationId Association Id
+ * @apiParam {String} member Member list consisting of their name, phone and country
+ *
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *         "electionName": "Orgware",
+ *         "startDate": "Jan 18 2016",
+ *         "endDate": "Jan 20 2016",
+ *         "vigilanceUserName": "Kennet",
+ *         "nominationEndDate": "Jan 16 2016",
+ *         "associationId": "1",
+ *         "associationAdminId": "1",
+ *         "members": [
+ *            "Catherine", "Victoria"
+ *         ]
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ */
+
 //adding members for an association
 exports.create = function(request, response) {
     var json;
@@ -294,7 +351,7 @@ exports.update = function(request, response) {
         if(request.body.userId != null) {
             request.getConnection(function(connectionError, connection) {
                 if(connectionError != null) {
-                    log.error(connectionError, "Database connection error (Function = Invite.Delete)");
+                    log.error(connectionError, "Database connection error (Function = Invite.Update)");
                     json = {
                         error: "Requested action failed. Database could not be reached."
                     };

@@ -5,11 +5,11 @@
  *
  * NodeServiceManager - v0.1.0
  *
- * Copyright (C) 2015, Kennet Jacob
+ * Copyright (C) 2015, Orgware Technologies
  * All Rights Reserved.
  *
  * NOTICE:  All information contained herein is, and remains the property
- * of Kennet Jacob. Unauthorised copying of this  file, via any medium is
+ * of Orgware Technologies. Unauthorised copying of this  file, via any medium is
  * strictly prohibited. Redistribution and use in source and binary forms,
  * with or without modification, are not permitted.
  * Proprietary and confidential.
@@ -56,45 +56,19 @@ var moment = require('moment');
  */
 
 /**
- * @api {post} /user Create a new user
- * @apiSampleRequest http://localhost:3000/users/v1/user
+ * @api {delete} admin/v1/user/:id Delete User
  * @apiVersion 0.1.0
- * @apiName CreateUser
- * @apiGroup User
+ * @apiName DeleteUser
+ * @apiGroup Admin
  *
- * @apiParam {String} fname User's first name.
- * @apiParam {String} lname User's last name.
- * @apiParam {String} email User's email.
- * @apiParam {String} phone User's phone number.
- * @apiParam {String} password User's password.
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *           "fname": "Kennet",
- *           "lname": "Jacob",
- *           "email": "kennetjacob@gmail.com",
- *           "password": "demodemo1234",
- *           "phone": "9994012253"
- *      }
+ * @apiParam {Number} id User's unique ID.
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
- *     {
- *           "secretKey": "2b73926b3cf4f6554eb5f2eadc38be95e3b1e883b7e16d3f80fbe6b5732501007575f90ea947d988a6c63bab8216ca2dd2fcc2a0e7b604a8f8a76c3856f4fdf2",
- *           "publicKey": "5ba30d56a51dea3c77bba7bddc39885d6a01879d18dbb6eb4df406d6988d8d55",
- *           "userId": "67",
- *           "authCode": 3759
- *     }
  *
  * @apiUse DatabaseError
  *
- * @apiError UserAlreadyExists The id of the User was not found.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "User already exists"
- *     }
+ * @apiUse UserNotFoundError
  *
  */
 

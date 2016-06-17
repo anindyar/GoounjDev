@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the poll answer service.
+ * This file contains the logic for the list of associations service.
  *
  *************************************************************************/
 

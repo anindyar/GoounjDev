@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the user service.
+ * This file contains the logic for the list of candidates service.
  *
  *************************************************************************/
 
@@ -54,7 +54,7 @@ var log = require('./../../../log');
 
 
 /**
- * @api {get} /vote/v1/electionList/:id List of candidates for an election
+ * @api {get} /vote/v1/candidateList/:id List of candidates for an election
  * @apiVersion 0.1.0
  * @apiName CreateCandidateList
  * @apiGroup Vote

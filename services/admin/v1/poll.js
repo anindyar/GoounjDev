@@ -32,6 +32,43 @@ var log = require('./../../../log');
 var moment = require('moment');
 
 
+/**
+ * @apiDefine PollNotFoundError
+ *
+ * @apiError PollNotFound The requested poll was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {delete} admin/v1/poll/:id Delete Poll
+ * @apiVersion 0.1.0
+ * @apiName DeletePoll
+ * @apiGroup Admin
+ *
+ * @apiParam {Number} id Poll's unique ID.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse PollNotFoundError
+ *
+ */
 
 exports["delete"] = function(request, response) {
     var json;

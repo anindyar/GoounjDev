@@ -1,7 +1,7 @@
 {
-  "name": "Node Service Manager",
+  "name": "Goounj Node Server",
   "version": "0.1.0",
   "description": "A node.js and express based modular RESTful service manager",
-  "title": "NodeServiceManager - API Doc",
+  "title": "Goounj Node Server - API Doc",
   "url" : "http://192.168.0.139:3000"
 }

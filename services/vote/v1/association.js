@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the user service.
+ * This file contains the logic for the association service.
  *
  *************************************************************************/
 
