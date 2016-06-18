@@ -23,7 +23,7 @@
  * FILE SUMMARY
  * __________________
  *
- * This file contains the logic for the user service.
+ * This file contains the logic for the vote service.
  *
  *************************************************************************/
 
@@ -32,6 +32,69 @@
 var config = require('./../../../config');
 var log = require('./../../../log');
 var moment = require('moment');
+
+
+/**
+ * @apiDefine CandidateNotFoundError
+ *
+ * @apiError CandidateNotFound The requested candidate was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+
+/**
+ * @apiDefine BadRequestError
+ *
+ * @apiError BadRequest Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/invite Invite Members to Association
+ * @apiVersion 0.1.0
+ * @apiName AssociationInvite
+ * @apiGroup Vote
+ *
+ * @apiParam {Number} userId User's unique Id
+ * @apiParam {Number} candidateId Candidate's unique Id
+ * @apiParam {Number} electionId Election's unique Id
+ *
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *        "userId": 3,
+ *        "candidateId": 7,
+ *        "electionId": 11
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CandidateNotFoundError
+ *
+ * @apiUse BadRequestError
+ *
+ */
 
 exports.create = function(request, response) {
     var json;
@@ -102,7 +165,7 @@ exports.create = function(request, response) {
                             error: "Election/Candidate does not exist."
                         };
                         log.info({Function: "Vote.Create"}, "User voting unsuccessful. Election/Candidate does not exist.");
-                        return response.status(400).json(json);
+                        return response.status(404).json(json);
                     }
                 });
             });

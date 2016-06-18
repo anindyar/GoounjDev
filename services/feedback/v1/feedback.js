@@ -53,7 +53,7 @@ var moment = require('moment');
  */
 
 /**
- * @api {post} feedback/v1/feedback/:id Create Feedback
+ * @api {post} /feedback/v1/feedback/:id Create Feedback
  * @apiVersion 0.1.0
  * @apiName CreateFeedback
  * @apiGroup Feedback

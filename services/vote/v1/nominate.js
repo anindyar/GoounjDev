@@ -31,6 +31,55 @@ var config = require('./../../../config');
 var log = require('./../../../log');
 
 
+
+/**
+ * @apiDefine CandidateNotFoundError
+ *
+ * @apiError CandidateNotFound The requested candidate was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {post} /vote/v1/nominate Accept Candidate
+ * @apiVersion 0.1.0
+ * @apiName AcceptCandidate
+ * @apiGroup Vote
+ *
+ * @apiParam {Number} isActive is_active flag for candidate
+ * @apiParam {Number} candidateId Candidate's unique id
+ *
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *         "isActive": 1,
+ *         "candidateId": 3
+ *     }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse CandidateNotFoundError
+ *
+ */
+
 exports.create = function(request, response) {
     var json;
     try {
@@ -71,6 +120,10 @@ exports.create = function(request, response) {
                                 }
                             }
                         });
+                    }
+                    else {
+                        log.info({Function: "Nominate.Create"}, "Candidate not found.");
+                        return response.sendStatus(404);
                     }
                 });
             });

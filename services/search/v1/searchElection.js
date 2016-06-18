@@ -53,10 +53,10 @@ var moment = require('moment');
  */
 
 /**
- * @api {post} search/v1/searchElection Search Elections
+ * @api {post} /search/v1/searchElection Search Elections
  * @apiVersion 0.1.0
  * @apiName searchElection
- * @apiGroup search
+ * @apiGroup Search
  *
  * @apiParam {Number} userId Audience User Id
  * @apiParam {String} searchString String to be searched for.

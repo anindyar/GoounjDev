@@ -62,8 +62,8 @@ exports.verifyotp = function(request, response) {
                 }
             }
             else {
-                log.info({Function: "otp.verifyotp"}, "otp verification unsuccessful.");
-                return response.sendStatus(401);
+                log.info({Function: "otp.verifyotp"}, "User not found.");
+                return response.sendStatus(404);
             }
         });
     });

@@ -56,7 +56,7 @@ var moment = require('moment');
  */
 
 /**
- * @api {delete} admin/v1/user/:id Delete User
+ * @api {delete} /admin/v1/user/:id Delete User
  * @apiVersion 0.1.0
  * @apiName DeleteUser
  * @apiGroup Admin

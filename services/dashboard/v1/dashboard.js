@@ -53,7 +53,7 @@ var moment = require('moment');
  */
 
 /**
- * @api {get} dashboard/v1/dashboard/:id Show Dashboard
+ * @api {get} /dashboard/v1/dashboard/:id Show Dashboard
  * @apiVersion 0.1.0
  * @apiName ShowDashboard
  * @apiGroup Dashboard

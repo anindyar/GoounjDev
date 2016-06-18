@@ -32,6 +32,57 @@ var log = require('./../../../log');
 var moment = require('moment');
 
 
+
+/**
+ * @apiDefine ElectionNotFoundError
+ *
+ * @apiError ElectionNotFound The requested election was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ */
+
+/**
+ * @apiDefine DatabaseError
+ *
+ * @apiError DatabaseError Database could not be reached.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 500 Internal Server Error
+ *     {
+ *       "error": "Requested Action Failed. Database could not be reached."
+ *     }
+ */
+
+/**
+ * @api {get} /vote/v1/voteResult/:id Show vote results
+ * @apiVersion 0.1.0
+ * @apiName VoteResult
+ * @apiGroup Vote
+ *
+ * @apiParam {Number} electionId Election's unique Id
+ *
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *     [
+ *      {
+ *        "votes": 2,
+ *        "candidate": "Catherine ",
+ *        "candidateId": 1,
+ *        "percentage": "100 %"
+ *      }
+ *     ]
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse ElectionNotFoundError
+ *
+ *
+ */
+
 exports.show = function(request, response) {
     var json;
     try {

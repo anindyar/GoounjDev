@@ -37,9 +37,9 @@ var mailer = require('./../../../email');
 
 
 /**
- * @apiDefine ElectionNotFoundError
+ * @apiDefine AssociationNotFoundError
  *
- * @apiError ElectionNotFound The requested election was not found.
+ * @apiError AssociationNotFound The requested association was not found.
  *
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 404 Not Found
@@ -59,9 +59,9 @@ var mailer = require('./../../../email');
  */
 
 /**
- * @api {post} /vote/v1/election Create Election
+ * @api {post} /vote/v1/invite Invite Members to Association
  * @apiVersion 0.1.0
- * @apiName CreateElection
+ * @apiName AssociationInvite
  * @apiGroup Vote
  *
  * @apiParam {String} associationId Association Id
@@ -70,15 +70,22 @@ var mailer = require('./../../../email');
  *
  * @apiParamExample {json} Request-Example:
  *     {
- *         "electionName": "Orgware",
- *         "startDate": "Jan 18 2016",
- *         "endDate": "Jan 20 2016",
- *         "vigilanceUserName": "Kennet",
- *         "nominationEndDate": "Jan 16 2016",
- *         "associationId": "1",
- *         "associationAdminId": "1",
- *         "members": [
- *            "Catherine", "Victoria"
+ *         "member": [
+ *            {
+ *              "name": "Cath",
+ *              "phone": "9944377754",
+ *              "country": "India",
+ *              "city": "Chennai",
+ *              "code": "91"
+ *            },
+ *            {
+ *              "name": "Ken",
+ *              "phone": "9994012253",
+ *              "country": "India",
+ *              "city": "Chennai",
+ *              "code": "91"
+ *            },
+ *            "associationId": 2
  *         ]
  *     }
  *
@@ -88,7 +95,7 @@ var mailer = require('./../../../email');
  *
  * @apiUse DatabaseError
  *
- * @apiUse ElectionNotFoundError
+ * @apiUse AssociationNotFoundError
  *
  */
 
@@ -298,6 +305,50 @@ exports.create = function(request, response) {
 };
 
 
+
+/**
+ * @api {get} /vote/v1/invite/:id Show Members of Association
+ * @apiVersion 0.1.0
+ * @apiName ShowAssociationMembers
+ * @apiGroup Vote
+ *
+ * @apiParam {String} id Association Id
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *  [
+ *      {
+ *        "email": "admin@bvocal.in",
+ *        "id": 1,
+ *        "phone": "1234567890",
+ *        "country": "India",
+ *        "name": "Goounj Bvocal",
+ *        "is_active": 1
+ *      },
+ *      {
+ *        "email": "",
+ *        "id": 6,
+ *        "phone": "9095914543",
+ *        "country": "India",
+ *        "name": "Nanda",
+ *        "is_active": 1
+ *      },
+ *      {
+ *        "email": "",
+ *        "id": 7,
+ *        "phone": "7339447457",
+ *        "country": "India",
+ *        "name": "Kate",
+ *        "is_active": 1
+ *      }
+ *  ]
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
+
 //members of the given association
 exports.show = function(request, response) {
     var json;
@@ -344,6 +395,32 @@ exports.show = function(request, response) {
     }
 };
 
+
+/**
+ * @api {put} /vote/v1/invite/:id Update Members of Association
+ * @apiVersion 0.1.0
+ * @apiName UpdateAssociationMember
+ * @apiGroup Vote
+ *
+ * @apiParam {Number} id Association Id
+ * @apiParam {Number} userId User's unique Id
+ * @apiParam {Number} isActive is_active flag of the association member
+ *
+ * @apiParamExample {json} Request-Example:
+ * {
+ *  "userId": 3,
+ *  "isActive": 0
+ * }
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *
+ *
+ * @apiUse DatabaseError
+ *
+ * @apiUse AssociationNotFoundError
+ *
+ */
 
 exports.update = function(request, response) {
     var json;
